@@ -1,0 +1,314 @@
+/* ==========================================================================
+   HỆ TRÌNH BÀY NỘI DUNG SOẠN TỪ ADMIN — THE UNI
+   Mọi nội dung người quản trị gõ trong trình soạn thảo (tiêu đề, đoạn văn,
+   bảng, danh sách, ghi chú, CTA...) tự lên khung đẹp theo ngôn ngữ thiết kế
+   của theme: nền trắng, chữ #1E1E1E, điểm nhấn vàng #f4bd24.
+   Các class .tbl-wrap/.uni-table/.btn-cta/.note-block/.swatch do
+   lib/contentHtml.ts (beautifyContent) tự gắn lúc render.
+   ========================================================================== */
+
+/* ---------- Khung chữ chung trong hộp nội dung trắng ---------- */
+.bg_blog .rte,
+.content-page.rte {
+  color: #2b2b2b;
+  font-size: 15.5px;
+  line-height: 1.75;
+}
+
+/* Đoạn sapo mở đầu bài viết: to hơn, đậm hơn một chút */
+.layout-article .article-details > .rte:first-child p {
+  font-size: 17px;
+  color: #444;
+}
+
+/* ---------- Tiêu đề mục ---------- */
+.bg_blog .rte h2,
+.content-page.rte h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e1e1e;
+  margin: 34px 0 14px;
+  padding-bottom: 10px;
+  position: relative;
+}
+.bg_blog .rte h2::after,
+.content-page.rte h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 52px;
+  height: 3px;
+  background: #f4bd24;
+  border-radius: 2px;
+}
+.bg_blog .rte h2:first-child,
+.content-page.rte h2:first-child {
+  margin-top: 6px;
+}
+.bg_blog .rte h3,
+.content-page.rte h3 {
+  font-size: 19px;
+  font-weight: 700;
+  color: #1e1e1e;
+  margin: 26px 0 10px;
+}
+.bg_blog .rte h3::before,
+.content-page.rte h3::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #f4bd24;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: 2px;
+}
+
+/* ---------- Danh sách ---------- */
+.bg_blog .rte ul,
+.bg_blog .rte ol,
+.content-page.rte ul,
+.content-page.rte ol {
+  margin: 12px 0 18px;
+  padding-left: 24px;
+}
+.bg_blog .rte li,
+.content-page.rte li {
+  margin: 7px 0;
+}
+.bg_blog .rte ul > li::marker,
+.content-page.rte ul > li::marker {
+  color: #f4bd24;
+  font-size: 1.1em;
+}
+.bg_blog .rte ol > li::marker,
+.content-page.rte ol > li::marker {
+  color: #1e1e1e;
+  font-weight: 700;
+}
+
+/* ---------- Trích dẫn / mẹo (blockquote) ---------- */
+.bg_blog .rte blockquote,
+.content-page.rte blockquote,
+.faq-rte blockquote {
+  margin: 24px 0;
+  padding: 16px 20px 16px 52px;
+  background: #fff8e1;
+  border: 0;
+  border-left: 4px solid #f4bd24;
+  border-radius: 10px;
+  color: #4a4a4a;
+  position: relative;
+}
+.bg_blog .rte blockquote::before,
+.content-page.rte blockquote::before,
+.faq-rte blockquote::before {
+  content: "💡";
+  position: absolute;
+  left: 18px;
+  top: 14px;
+  font-size: 20px;
+}
+/* nhiều dòng blockquote liền nhau (Quill tách mỗi dòng 1 thẻ) -> dính thành 1 khối */
+.bg_blog .rte blockquote + blockquote,
+.content-page.rte blockquote + blockquote,
+.faq-rte blockquote + blockquote {
+  margin-top: -24px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  padding-top: 0;
+}
+.bg_blog .rte blockquote + blockquote::before,
+.content-page.rte blockquote + blockquote::before,
+.faq-rte blockquote + blockquote::before {
+  content: "";
+}
+
+/* ---------- Bảng (bọc bởi .tbl-wrap để cuộn ngang trên mobile) ---------- */
+.tbl-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 20px 0 10px;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  background: #fff;
+}
+.tbl-wrap::-webkit-scrollbar {
+  height: 8px;
+}
+.tbl-wrap::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+table.uni-table {
+  width: 100%;
+  min-width: 540px;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 15px;
+  background: #fff;
+}
+table.uni-table thead th,
+table.uni-table > tr:first-child th,
+table.uni-table tbody:first-child > tr:first-child th {
+  background: #1e1e1e;
+  color: #fff;
+  font-weight: 700;
+  text-align: left;
+  padding: 13px 16px;
+  border-bottom: 3px solid #f4bd24;
+  white-space: nowrap;
+}
+/* bảng do người dùng tự tạo trong admin có thể không có hàng th -> coi hàng đầu là tiêu đề */
+table.uni-table:not(:has(th)) tbody tr:first-child td {
+  background: #1e1e1e;
+  color: #fff;
+  font-weight: 700;
+  border-bottom: 3px solid #f4bd24;
+}
+table.uni-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f1f1;
+  vertical-align: middle;
+}
+/* Quill lồng <p> trong ô bảng — khử margin để ô không bị "phồng" */
+table.uni-table th p,
+table.uni-table td p {
+  margin: 0;
+}
+table.uni-table tbody tr:nth-child(even) td {
+  background: #faf9f5;
+}
+table.uni-table tbody tr:hover td {
+  background: #fff7dc;
+}
+table.uni-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+table.uni-table td:first-child,
+table.uni-table th:first-child {
+  padding-left: 20px;
+}
+table.uni-table tbody td:first-child {
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+/* ---------- Khung ghi chú "Lưu ý:" ---------- */
+.note-block,
+.bg_blog .rte p.note-block,
+.content-page.rte p.note-block {
+  background: #f6f6f6;
+  border-left: 4px solid #c9c9c9;
+  border-radius: 10px;
+  padding: 12px 18px;
+  color: #5a5a5a;
+  font-size: 14.5px;
+  margin: 14px 0 24px;
+}
+.note-block strong {
+  color: #3d3d3d;
+}
+
+/* ---------- Nút CTA (link tới form tư vấn) ---------- */
+a.btn-cta,
+.bg_blog .rte a.btn-cta,
+.content-page.rte a.btn-cta {
+  display: inline-block;
+  background: #f4bd24;
+  color: #1e1e1e !important;
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 13px 34px;
+  border-radius: 999px;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(244, 189, 36, 0.4);
+  transition: all 0.25s ease;
+}
+a.btn-cta:hover {
+  background: #1e1e1e;
+  color: #f4bd24 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+/* đoạn chứa nút CTA: căn giữa, thoáng */
+.bg_blog .rte p:has(> a.btn-cta),
+.content-page.rte p:has(> a.btn-cta) {
+  text-align: center;
+  margin: 30px 0;
+}
+
+/* ---------- Ô màu vải (span có background-color) ---------- */
+span.swatch {
+  display: inline-block;
+  min-width: 46px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+  vertical-align: middle;
+  line-height: 26px;
+}
+
+/* ---------- Link thường, ảnh, kẻ ngang ---------- */
+.bg_blog .rte a:not(.btn-cta),
+.content-page.rte a:not(.btn-cta) {
+  color: #b8860b;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.bg_blog .rte a:not(.btn-cta):hover,
+.content-page.rte a:not(.btn-cta):hover {
+  color: #1e1e1e;
+}
+.bg_blog .rte img,
+.content-page.rte img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 18px auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+}
+.bg_blog .rte hr,
+.content-page.rte hr {
+  border: 0;
+  border-top: 1px dashed #ddd;
+  margin: 26px 0;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 767px) {
+  .bg_blog .rte,
+  .content-page.rte {
+    font-size: 15px;
+  }
+  .bg_blog .rte h2,
+  .content-page.rte h2 {
+    font-size: 20px;
+    margin-top: 28px;
+  }
+  .bg_blog .rte h3,
+  .content-page.rte h3 {
+    font-size: 17px;
+  }
+  .layout-article .article-details > .rte:first-child p {
+    font-size: 15.5px;
+  }
+  table.uni-table {
+    font-size: 14px;
+  }
+  table.uni-table td,
+  table.uni-table thead th {
+    padding: 10px 12px;
+  }
+  a.btn-cta {
+    padding: 12px 26px;
+    font-size: 14px;
+  }
+}

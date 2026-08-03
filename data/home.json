@@ -1,0 +1,380 @@
+{
+ "slides": [
+  {
+   "href": "/bst-ao-lop-so-mi-summer-vibe-danh-thuc-thanh-xuan-ruc-ro-cung-THEUNI-clothing",
+   "title": "BST Áo lớp Summer Vie",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_1.jpg?1782983396272",
+   "imgMb": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_mb_1.jpg?1782983396272"
+  },
+  {
+   "href": "/tong-hop-cac-mau-dong-phuc-cong-ty-chat-luong-tai-THEUNI-clothing",
+   "title": "Khuyến mãi đồng phục áo lớp",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_2.jpg?1782983396272",
+   "imgMb": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_mb_2.jpg?1782983396272"
+  },
+  {
+   "href": "/gioi-thieu-bst-ao-lop-bong-bau-duc-zenergy-khoi-nguon-nang-luong-but-pha-ca-tinh-gen-z",
+   "title": "BST áo lớp Zenergy",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_3.jpg?1782983396272",
+   "imgMb": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_mb_3.jpg?1782983396272"
+  },
+  {
+   "href": "/bst-ao-lop-bong-bau-duc-infini-teen-khang-dinh-chat-rieng-voi-su-sang-tao-vo-cuc",
+   "title": "BST áo lớp Infini-teen",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_4.jpg?1782983396272",
+   "imgMb": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_mb_4.jpg?1782983396272"
+  },
+  {
+   "href": "/gioi-thieu-bst-ao-lop-classzip-keo-khoa-ca-tinh-mo-loi-rieng-biet",
+   "title": "BST Áo lớp Classzip",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_5.jpg?1782983396272",
+   "imgMb": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_mb_5.jpg?1782983396272"
+  },
+  {
+   "href": "/bst-ao-lop-cooline-dau-an-cho-ky-niem-thanh-xuan-kho-quen",
+   "title": "BST Áo lớp Cooline",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_6.jpg?1782983396272",
+   "imgMb": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_mb_6.jpg?1782983396272"
+  },
+  {
+   "href": "/gioi-thieu-bst-zippy-crew-buoc-vao-vu-tru-bung-no-ca-tinh-cung-THEUNI",
+   "title": "BST Áo lớp Zippy Crew",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_7.jpg?1782983396272",
+   "imgMb": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_mb_7.jpg?1782983396272"
+  },
+  {
+   "href": "/gioi-thieu-bst-ao-lop-polo-classmark-nang-tam-phong-cach-hoc-duong-cung-THEUNI-clothing",
+   "title": "BST Áo lớp polo Classmark",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_8.jpg?1782983396272",
+   "imgMb": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_mb_8.jpg?1782983396272"
+  },
+  {
+   "href": "/kham-pha-bst-ao-lop-retroverse-mang-dam-phong-cach-retro-nang-dong-tuoi-moi",
+   "title": "BST Áo lớp bóng bầu dục Funky Jersey",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_9.jpg?1782983396272",
+   "imgMb": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/slider_mb_9.jpg?1782983396272"
+  }
+ ],
+ "banner4": {
+  "items": [
+   {
+    "href": "/cac-mau-ao-lop-best-seller-tai-THEUNI-clothing",
+    "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ind_1.jpg?1782983396272"
+   },
+   {
+    "href": "/tong-hop-cac-mau-dong-phuc-cong-ty-chat-luong-tai-THEUNI-clothing",
+    "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ind_2.jpg?1782983396272"
+   },
+   {
+    "href": "/tong-hop-nhung-mau-dong-phuc-the-thao-nhom-dep-tai-THEUNI-clothing",
+    "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ind_3.jpg?1782983396272"
+   }
+  ],
+  "bg": [
+   "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ind_4.jpg?1782983396272",
+   "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ind_4.jpg?1782983396272"
+  ],
+  "buttons": [
+   {
+    "href": "/thiet-ke",
+    "label": "XEM THIẾT KẾ ĐẸP"
+   },
+   {
+    "href": "/thiet-ke",
+    "label": "XEM THIẾT KẾ ĐẸP"
+   }
+  ]
+ },
+ "sanpham": [
+  {
+   "type": "side",
+   "href": "/THEUNI-clothing-dia-diem-thiet-ke-va-in-ao-lop-cuc-thoi-trang-va-an-tuong-danh-cho-gioi-tre",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_spdp_1.jpg?1782983396272"
+  },
+  {
+   "type": "side",
+   "href": "/top-7-mon-phu-kien-dong-phuc-khong-the-thieu",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_spdp_3.jpg?1782983396272"
+  },
+  {
+   "type": "wide",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_spdp_1_2.jpg?1782983396272",
+   "right": false,
+   "href": "/THEUNI-clothing-dia-diem-thiet-ke-va-in-ao-lop-cuc-thoi-trang-va-an-tuong-danh-cho-gioi-tre"
+  },
+  {
+   "type": "wide",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_spdp_2_2.jpg?1782983396272",
+   "right": true,
+   "href": "/top-7-mon-phu-kien-dong-phuc-khong-the-thieu"
+  }
+ ],
+ "danhmuc": [
+  {
+   "href": "/ao-thun",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_1.jpg?1782983396272",
+   "name": "ÁO THUN",
+   "detail": "/ao-thun-co-tron-don-gian-nhung-khong-bao-gio-loi-thoi"
+  },
+  {
+   "href": "/ao-polo",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_2.jpg?1782983396272",
+   "name": "ÁO POLO",
+   "detail": "/ao-polo-bieu-tuong-cua-su-thanh-lich-tinh-te"
+  },
+  {
+   "href": "/ao-bong-bau-duc-1",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_3.jpg?1782983396272",
+   "name": "ÁO BÓNG BẦU DỤC",
+   "detail": "/ao-lop-bong-bau-duc-chi-co-tai-THEUNI-clothing"
+  },
+  {
+   "href": "/ao-bong-chay-1",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_4.jpg?1782983396272",
+   "name": "ÁO BÓNG CHÀY",
+   "detail": "/ao-thun-bong-chay-THEUNI-su-dot-pha-trong-thiet-ke-dong-phuc"
+  },
+  {
+   "href": "/ao-zippy-polo",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_5.jpg?1782983396272",
+   "name": "ÁO ZIPPY POLO",
+   "detail": "/ao-lop-zippy-polo-xu-huong-moi-2024"
+  },
+  {
+   "href": "/ao-tie-line-polo",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_6.jpg?1782983396272",
+   "name": "ÁO TIE LINE POLO",
+   "detail": "/ao-thun-bong-chay-THEUNI-su-dot-pha-trong-thiet-ke-dong-phuc"
+  },
+  {
+   "href": "/ao-lop-so-mi",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_8.jpg?1782983396272",
+   "name": "SƠ-MI CỔ VEST",
+   "detail": "/ao-lop-so-mi-dong-phuc-lop-ruc-ro-sac-mau"
+  },
+  {
+   "href": "/ao-lop-so-mi",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_9.jpg?1782983396272",
+   "name": "SƠ-MI CASUAL",
+   "detail": "/preppy-shirt-mau-ao-lop-so-mi-pha-cach-va-khong-go-bo"
+  },
+  {
+   "href": "/ao-bong-ro",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_10.jpg?1782983396272",
+   "name": "ĐỒ BÓNG RỔ",
+   "detail": "/don-he-cuc-hot-cung-bst-ao-lop-bong-ro-tai-THEUNI-clothing"
+  },
+  {
+   "href": "/quan-thun",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_11.jpg?1782983396272",
+   "name": "QUẦN THUN",
+   "detail": "/quan-lop-tai-sao-khong"
+  },
+  {
+   "href": "/ao-noi-tay",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_12.jpg?1782983396272",
+   "name": "ÁO NỐI TAY",
+   "detail": "/comic-collection-ve-nen-cau-chuyen-rieng-cua-lop-minh"
+  },
+  {
+   "href": "/ao-sweater-zip",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_14.jpg?1782983396272",
+   "name": "ÁO SWEATER ZIP",
+   "detail": "/sweater-zip-lua-chon-hoan-hao-cho-ao-lop-mua-dong"
+  },
+  {
+   "href": "/ao-cardigan",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_15.jpg?1782983396272",
+   "name": "ÁO CARDIGAN",
+   "detail": "/ao-lop-cardigan-duy-nhat-chi-co-tai-THEUNI"
+  },
+  {
+   "href": "/phu-kien",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_16.jpg?1782983396272",
+   "name": "PHỤ KIỆN",
+   "detail": "/top-10-mon-phu-kien-dong-phuc-khong-the-thieu"
+  },
+  {
+   "href": "/ao-thun",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_17.jpg?1782983396272",
+   "name": "ÁO RAGLAN",
+   "detail": "/ao-thun-co-tron-don-gian-nhung-khong-bao-gio-loi-thoi"
+  },
+  {
+   "href": "/ao-hoodie",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_18.jpg?1782983396272",
+   "name": "HOODIE",
+   "detail": "/tong-hop-cac-mau-ao-khoac-tai-THEUNI-clothing-hoodie-sweater-sweater-zip"
+  },
+  {
+   "href": "/ao-pickleball",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_19.jpg?1782983396272",
+   "name": "ÁO THỂ THAO",
+   "detail": "/gioi-thieu-bst-pickleball-challenger-chinh-phuc-moi-thach-thuc-cung-THEUNI-clothing"
+  },
+  {
+   "href": "/so-mi-button-on",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_20.jpg?1782983396272",
+   "name": "SƠ MI BUTTON ON",
+   "detail": "/ra-mat-bst-buttonon-ao-so-mi-co-tru-moi-la-ao-lop-chat-lu-cho-hoi-ban-than"
+  },
+  {
+   "href": "/gioi-thieu-bst-cozy-sleeve-ao-lop-tay-dai-am-ap-cho-mua-le-hoi-cuoi-nam",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_21.jpg?1782983396272",
+   "name": "Áo Sweater",
+   "detail": "/gioi-thieu-bst-cozy-sleeve-ao-lop-tay-dai-am-ap-cho-mua-le-hoi-cuoi-nam"
+  },
+  {
+   "href": "/gioi-thieu-bst-cool-collar-ao-lop-co-la-den-tu-THEUNI",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_22.jpg?1782983396272",
+   "name": "Áo thun Cool Collar",
+   "detail": "/gioi-thieu-bst-cool-collar-ao-lop-co-la-den-tu-THEUNI"
+  },
+  {
+   "href": "/gioi-thieu-bst-cool-collar-ao-lop-co-la-den-tu-THEUNI",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_23.jpg?1782983396272",
+   "name": "Áo Polo Cool Collar",
+   "detail": "/gioi-thieu-bst-cool-collar-ao-lop-co-la-den-tu-THEUNI"
+  },
+  {
+   "href": "/gioi-thieu-bst-ao-lop-football-ver-2-bung-no-ca-tinh-cung-tap-the",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_24.jpg?1782983396272",
+   "name": "Áo bóng bầu dục Ver 2",
+   "detail": "/gioi-thieu-bst-ao-lop-football-ver-2-bung-no-ca-tinh-cung-tap-the"
+  },
+  {
+   "href": "/kham-pha-bst-ao-lop-retroverse-mang-dam-phong-cach-retro-nang-dong-tuoi-moi",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/danhmuc_25.jpg?1782983396272",
+   "name": "Áo Retroverse",
+   "detail": "/kham-pha-bst-ao-lop-retroverse-mang-dam-phong-cach-retro-nang-dong-tuoi-moi"
+  }
+ ],
+ "brands": [
+  {
+   "href": "/search?query=b%C3%A1ch+khoa&type=product",
+   "title": "Đại học Bách Khoa",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/img_brand_1.jpg?1782983396272"
+  },
+  {
+   "href": "/search?query=ftu&type=product",
+   "title": "Đại Học Ngoại Thương",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/img_brand_2.jpg?1782983396272"
+  },
+  {
+   "href": "/search?query=UEH&type=product",
+   "title": "UEH",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/img_brand_3.jpg?1782983396272"
+  },
+  {
+   "href": "/search?query=%C4%91%E1%BA%A1i+h%E1%BB%8Dc+ng%C3%A2n+h%C3%A0ng&type=product",
+   "title": "Đại học Ngân Hàng HCM",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/img_brand_4.jpg?1782983396272"
+  },
+  {
+   "href": "/search?query=IU&type=product",
+   "title": "Đại học Quốc Tế",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/img_brand_5.jpg?1782983396272"
+  },
+  {
+   "href": "/search?query=UEF&type=product",
+   "title": "UEF",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/img_brand_6.jpg?1782983396272"
+  },
+  {
+   "href": "/search?query=RMIT&type=product",
+   "title": "RMIT",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/img_brand_7.jpg?1782983396272"
+  },
+  {
+   "href": "/search?query=OCB&type=product",
+   "title": "Ngân hàng OCB",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/img_brand_8.jpg?1782983396272"
+  },
+  {
+   "href": "/search?query=vietinbank&type=product",
+   "title": "VietinBank",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/img_brand_9.jpg?1782983396272"
+  },
+  {
+   "href": "/citi-gym-comback",
+   "title": "CITIGYM",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/img_brand_10.jpg?1782983396272"
+  }
+ ],
+ "feedbacks": [
+  {
+   "href": "/ao-nhom-trai-tre-xanh-lanh-chanh",
+   "title": "Trại Tre Xanh Lanh Chanh",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ph_1.jpg?1782983396272",
+   "text": "Áo đồng phục của THE UNI xịn xò khỏi chê luôn, chất vải mềm mịn, mát mẻ, form áo chuẩn chỉnh, giá cả học sinh. Mọi người trong lớp ai cũng ưng ý cực. Tin tưởng THE UNI là không bao giờ sai nhaaa! 😍"
+  },
+  {
+   "href": "/ao-nhom-marketing-challengers-rmit",
+   "title": "CLB Marketing Challengers – Rmit",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ph_2.jpg?1782983396272",
+   "text": "Đặt đồng phục cho công ty tại THE UNI, mình hoàn toàn yên tâm về chất lượng. Áo may đẹp, lên form chuẩn và các bạn tư vấn rất dễ thương, nhiệt tình. Sẽ tiếp tục ủng hộ THE UNI trong tương lai!"
+  },
+  {
+   "href": "/ao-nhom-mua-he-xanh-2025-dh-ngoai-thuong",
+   "title": "Mùa Hè Xanh 2025 - ĐH Ngoại Thương",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ph_3.jpg?1782983396272",
+   "text": "Chất áo 10 điểm không có nhưng, đẹp xuất sắc! Mặc lên chụp kỷ yếu bao đỉnh, cả trường ai cũng hỏi mua ở đâu luôn á. Lớp mình \"hot\" nhất nhờ có áo của THE UNI á! Nhà Tồ đỉnh thiệt sự! ❤️❤️❤️"
+  },
+  {
+   "href": "/ao-lop-12a13-nguyen-huu-cau",
+   "title": "12A13 - Nguyễn Hữu Cầu",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ph_4.jpg?1782983396272",
+   "text": "Áo đẹp xuất sắc, form chuẩn. Ưng nhất là tư vấn nhiệt tình, dễ thương cực luôn, tư vấn sao là y như vậy. Nhờ có THE UNI, bọn mình đã có được những chiếc áo lớp ưng ý nhất. 5 sao cho nhà Khoai nhé! ❤️"
+  },
+  {
+   "href": "/opem-marketing-group",
+   "title": "Open Marketing Group",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ph_5.jpg?1782983396272",
+   "text": "Lần đầu làm áo mà chất lượng xịn quá, vải mát rượi, mặc thích dã man. Hình in đẹp, sắc nét. Đặc biệt ấn tượng với dịch vụ tư vấn nhiệt tình vô cùng của các bé Tồ. 10/10 cho trải nghiệm tuyệt vời này! ⭐⭐⭐⭐⭐"
+  },
+  {
+   "href": "/12c2-so-2-lao-cai ",
+   "title": "12A15 - Nguyễn Chí Thanh",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ph_6.jpg?1782983396272",
+   "text": "Lúc nhận hàng, đóng gói quá xuất sắc, màu sắc cưng xỉu, vải mát rượi mặc thích lắm. Logo với cờ in cũng đẹp nữa. Cảm ơn Tồ đã mang đến cho lớp em những chiếc áo lớp đẹp tuyệt vời như zậy~~ 😍😍"
+  },
+  {
+   "href": "/12-anh-2-chuyen-ha-tinh",
+   "title": "9A9 - THCS Quang Trung",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ph_7.jpg?1782983396272",
+   "text": "Đặt áo thun đồng phục lớp ở THEUNI ưng lắm! Chất áo siêu xịn, dày dặn, mặc lên cực thích, form đẹp chuẩn chỉnh luôn! Đội ngũ THEUNI tư vấn nhiệt tình và giao hàng nhanh, đúng hẹn lắm nhennn!"
+  },
+  {
+   "href": "",
+   "title": "Truyền Thông P.R.O",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ph_8.jpg?1782983396272",
+   "text": "Chất lượng đỉnh chóp, ưng ý từ A đến Z! Hộp đựng áo rất xịn nha chưa thấy chỗ nào có lun, áo thun đẹp miễn chê, còn giao hàng nhanh nữa. Mình đã đặt nhiều lần và cực kỳ tin tưởng THEUNI. 10 điểm cho chất lượng và dịch vụ!"
+  },
+  {
+   "href": "/ao-bong-bau-duc-8-1",
+   "title": "Lê Hà Family",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ph_9.jpg?1782983396272",
+   "text": "Áo đẹp xuất sắc, vải mềm mịn, mát rượi, cả nhà ai cũng mê. In hình gia đình siêu cute, ưng ý dã man. Cảm ơn THE UNI đã giúp nhà mình có áo đồng phục gia đình \"xịn sò\" nhất quả đất nàyyyy"
+  },
+  {
+   "href": "",
+   "title": "Công Ty Lê Thanh Hòa",
+   "img": "https://bizweb.dktcdn.net/100/482/641/themes/903121/assets/banner_ph_10.jpg?1782983396272",
+   "text": "Công ty mình đặt áo team building bên THE UNI, ưng ý dã man! Chất vải đẹp, co giãn tốt, in logo sắc nét. Mặc lên nhìn chuyên nghiệp, team mình mấy anh chị em ai cũng mê. 10 điểm cho THEUNI! 💖💖"
+  }
+ ],
+ "blogs": [
+  {
+   "href": "/tong-hop-cac-mau-ao-lop-so-mi-ruc-ro-sac-mau-tai-THEUNI-clothing",
+   "title": "Tổng hợp các mẫu áo lớp sơ mi rực rỡ sắc màu tại THE UNI",
+   "img": "https://bizweb.dktcdn.net/100/482/641/articles/tong-hop-cac-mau-ao-lop-so-mi-ruc-ro-sac-mau-thumb.jpg?v=1779787090220",
+   "excerpt": "THEUNI tự hào sở hữu hàng loạt BST áo lớp sơ mi đa dạng với nhiều mẫu thiết kế độc đáo và phong cách lịch sự, trẻ trung. Cùng THEUNI tìm hiểu lý do vì sao áo sơ mi là lựa chọn hoàn hảo cho..."
+  },
+  {
+   "href": "/bst-ao-lop-so-mi-summer-vibe-danh-thuc-thanh-xuan-ruc-ro-cung-THEUNI-clothing",
+   "title": "BST Áo Lớp Sơ Mi Summer Vibe: Đánh Thức Thanh Xuân Rực Rỡ Cùng THE UNI",
+   "img": "https://bizweb.dktcdn.net/100/482/641/articles/bst-ao-lop-so-mi-summer-vibe-26.jpg?v=1778834073707",
+   "excerpt": "Mùa hè rực rỡ với tiếng ve và những chuyến đi chơi xa chính là lúc lớp mình cần một diện mạo thật ấn tượng. BST Summer Vibe từ THE UNI mang đến mẫu áo lớp sơ mi vừa lịch sự để chụp kỷ yếu,..."
+  }
+ ]
+}

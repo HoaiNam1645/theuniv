@@ -1,0 +1,46 @@
+/* Bổ sung nhỏ cho bản clone (theme gốc xử lý bằng jQuery) */
+
+/* Biến màu inline trong <head> của trang gốc */
+:root {
+  --mainColor: #f4bd24;
+  --textColor: #231f20;
+}
+
+/* Chữ THE UNI cạnh logo luôn 1 dòng như bản gốc */
+#logo a .text-white,
+#logo_mob a .text-white {
+  white-space: nowrap;
+}
+
+/* Mobile: mở menu con khi bấm mũi tên */
+@media (max-width: 991px) {
+  .header-nav .item_big > li.nav-item.open-sub > ul.item_small {
+    max-height: 1000px !important;
+    max-width: 100% !important;
+    opacity: 1 !important;
+    position: static !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+}
+
+/* Sidebar lọc mobile: mở bằng nút "Bộ lọc" */
+.dqdt-sidebar.open-mb {
+  visibility: visible !important;
+  transform: translateX(0) !important;
+}
+.opacity_sidebar {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 999999;
+}
+.opacity_sidebar.show {
+  display: block;
+}
+
+/* Ảnh sản phẩm trang chi tiết xếp dọc */
+.product-detail-left img {
+  max-width: 100%;
+}

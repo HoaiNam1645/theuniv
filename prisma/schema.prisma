@@ -1,0 +1,338 @@
+generator client {
+  provider = "prisma-client-js"
+  // native = máy dev (macOS), debian-openssl-3.0.x = VPS Ubuntu 24.04
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==== SẢN PHẨM ====
+
+model Category {
+  id             Int               @id @default(autoincrement())
+  name           String
+  slug           String            @unique
+  kind           CategoryKind      @default(collection)
+  description    String?           @db.Text
+  bannerImage    String?           @map("banner_image")
+  position       Int               @default(0)
+  isActive       Boolean           @default(true) @map("is_active")
+  seoTitle       String?           @map("seo_title")
+  seoDescription String?           @map("seo_description") @db.VarChar(500)
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+  products       CategoryProduct[]
+
+  @@map("categories")
+}
+
+enum CategoryKind {
+  collection
+  bst
+}
+
+model ProductType {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  image       String?
+  articleSlug String?   @map("article_slug")
+  showOnHome  Boolean   @default(false) @map("show_on_home")
+  position    Int       @default(0)
+  products    Product[]
+
+  @@map("product_types")
+}
+
+model Product {
+  id             Int               @id @default(autoincrement())
+  name           String
+  slug           String            @unique
+  productTypeId  Int?              @map("product_type_id")
+  productType    ProductType?      @relation(fields: [productTypeId], references: [id])
+  material       String?
+  printMethod    String?           @map("print_method")
+  form           String?
+  code           String?
+  description    String?           @db.MediumText
+  status         ProductStatus     @default(active)
+  position       Int               @default(0)
+  viewCount      Int               @default(0) @map("view_count")
+  seoTitle       String?           @map("seo_title")
+  seoDescription String?           @map("seo_description") @db.VarChar(500)
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+  images         ProductImage[]
+  categories     CategoryProduct[]
+  tags           ProductTag[]
+
+  @@map("products")
+}
+
+enum ProductStatus {
+  draft
+  active
+  hidden
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId Int     @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String  @db.VarChar(500)
+  position  Int     @default(0)
+
+  @@map("product_images")
+}
+
+model CategoryProduct {
+  categoryId Int      @map("category_id")
+  productId  Int      @map("product_id")
+  position   Int      @default(0)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([categoryId, productId])
+  @@map("category_product")
+}
+
+model Tag {
+  id       Int          @id @default(autoincrement())
+  name     String
+  slug     String
+  group    TagGroup
+  hexColor String?      @map("hex_color") @db.Char(7)
+  position Int          @default(0)
+  products ProductTag[]
+
+  @@unique([slug, group])
+  @@map("tags")
+}
+
+enum TagGroup {
+  phan_loai
+  kieu_thiet_ke
+  mau_sac
+}
+
+model ProductTag {
+  productId Int     @map("product_id")
+  tagId     Int     @map("tag_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
+  @@map("product_tag")
+}
+
+// ==== BÀI VIẾT ====
+
+model ArticleCategory {
+  id       Int       @id @default(autoincrement())
+  name     String
+  slug     String    @unique
+  position Int       @default(0)
+  isActive Boolean   @default(true) @map("is_active")
+  articles Article[]
+
+  @@map("article_categories")
+}
+
+model Article {
+  id                Int              @id @default(autoincrement())
+  title             String           @db.VarChar(500)
+  slug              String           @unique
+  articleCategoryId Int?             @map("article_category_id")
+  category          ArticleCategory? @relation(fields: [articleCategoryId], references: [id])
+  thumbnail         String?          @db.VarChar(500)
+  excerpt           String?          @db.VarChar(1000)
+  body              String?          @db.MediumText
+  author            String?
+  isFeatured        Boolean          @default(false) @map("is_featured")
+  status            PublishStatus    @default(draft)
+  publishedAt       DateTime?        @map("published_at")
+  viewCount         Int              @default(0) @map("view_count")
+  seoTitle          String?          @map("seo_title")
+  seoDescription    String?          @map("seo_description") @db.VarChar(500)
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@map("articles")
+}
+
+enum PublishStatus {
+  draft
+  published
+}
+
+// ==== FAQ ====
+
+model FaqCategory {
+  id       Int    @id @default(autoincrement())
+  name     String
+  position Int    @default(0)
+  faqs     Faq[]
+
+  @@map("faq_categories")
+}
+
+model Faq {
+  id            Int         @id @default(autoincrement())
+  faqCategoryId Int         @map("faq_category_id")
+  category      FaqCategory @relation(fields: [faqCategoryId], references: [id], onDelete: Cascade)
+  question      String      @db.VarChar(500)
+  answer        String      @db.MediumText
+  position      Int         @default(0)
+  isActive      Boolean     @default(true) @map("is_active")
+
+  @@map("faqs")
+}
+
+// ==== TRANG & GIAO DIỆN ====
+
+model Page {
+  id             Int           @id @default(autoincrement())
+  title          String
+  slug           String        @unique
+  body           String?       @db.MediumText
+  status         PublishStatus @default(published)
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @map("seo_description") @db.VarChar(500)
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@map("pages")
+}
+
+model Menu {
+  id       Int          @id @default(autoincrement())
+  label    String
+  url      String       @db.VarChar(500)
+  parentId Int?         @map("parent_id")
+  parent   Menu?        @relation("MenuChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children Menu[]       @relation("MenuChildren")
+  location MenuLocation @default(header)
+  position Int          @default(0)
+  isActive Boolean      @default(true) @map("is_active")
+
+  @@map("menus")
+}
+
+enum MenuLocation {
+  header
+  footer
+}
+
+model Slider {
+  id           Int     @id @default(autoincrement())
+  title        String?
+  imageDesktop String  @map("image_desktop") @db.VarChar(500)
+  imageMobile  String? @map("image_mobile") @db.VarChar(500)
+  link         String? @db.VarChar(500)
+  position     Int     @default(0)
+  isActive     Boolean @default(true) @map("is_active")
+
+  @@map("sliders")
+}
+
+model Banner {
+  id         Int     @id @default(autoincrement())
+  slot       String  @db.VarChar(50)
+  image      String  @db.VarChar(500)
+  link       String? @db.VarChar(500)
+  buttonText String? @map("button_text") @db.VarChar(100)
+  position   Int     @default(0)
+  isActive   Boolean @default(true) @map("is_active")
+
+  @@map("banners")
+}
+
+model BrandLogo {
+  id       Int     @id @default(autoincrement())
+  title    String?
+  image    String  @db.VarChar(500)
+  link     String? @db.VarChar(500)
+  position Int     @default(0)
+  isActive Boolean @default(true) @map("is_active")
+
+  @@map("brand_logos")
+}
+
+model Testimonial {
+  id       Int     @id @default(autoincrement())
+  title    String
+  image    String  @db.VarChar(500)
+  quote    String  @db.Text
+  link     String? @db.VarChar(500)
+  position Int     @default(0)
+  isActive Boolean @default(true) @map("is_active")
+
+  @@map("testimonials")
+}
+
+model Setting {
+  key   String  @id
+  value String? @db.Text
+
+  @@map("settings")
+}
+
+// ==== LEADS ====
+
+model Lead {
+  id        Int        @id @default(autoincrement())
+  name      String
+  phone     String     @db.VarChar(20)
+  email     String?
+  unit      String?
+  product   String?
+  message   String?    @db.Text
+  sourceUrl String?    @map("source_url") @db.VarChar(500)
+  status    LeadStatus @default(new)
+  note      String?    @db.Text
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("leads")
+}
+
+enum LeadStatus {
+  new
+  contacted
+  quoted
+  won
+  lost
+}
+
+// ==== HỆ THỐNG ====
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(editor)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+enum UserRole {
+  admin
+  editor
+}
+
+model Media {
+  id        Int      @id @default(autoincrement())
+  path      String   @db.VarChar(500)
+  alt       String?
+  size      Int?
+  width     Int?
+  height    Int?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("media")
+}

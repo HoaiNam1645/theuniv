@@ -1,0 +1,128 @@
+[
+ {
+  "href": "/",
+  "label": "Trang chủ",
+  "subs": []
+ },
+ {
+  "href": "/dong-phuc",
+  "label": "Đồng Phục",
+  "subs": [
+   {
+    "href": "/asdasd",
+    "label": "BẢNG GIÁ ĐỒNG PHỤC"
+   },
+   {
+    "href": "/bang-gia-ao-lop",
+    "label": "BẢNG GIÁ ÁO LỚP"
+   },
+   {
+    "href": "/bang-gia-phu-kien-THEUNI",
+    "label": "BẢNG GIÁ PHỤ KIỆN"
+   },
+   {
+    "href": "/bang-gia-combo",
+    "label": "BẢNG GIÁ COMBO F&B"
+   },
+   {
+    "href": "/bang-gia-dich-vu",
+    "label": "BẢNG GIÁ DỊCH VỤ"
+   },
+   {
+    "href": "/bang-size-san-pham",
+    "label": "BẢNG SIZE SẢN PHẨM"
+   },
+   {
+    "href": "/bang-mau-vai",
+    "label": "BẢNG MÀU VẢI"
+   },
+   {
+    "href": "/cac-loai-vai-ao-dong-phuc",
+    "label": "CÁC LOẠI VẢI ÁO ĐỒNG PHỤC"
+   },
+   {
+    "href": "/quy-uoc-kich-thuoc-in",
+    "label": "QUY ƯỚC KÍCH THƯỚC IN"
+   }
+  ]
+ },
+ {
+  "href": "/bst-THEUNI",
+  "label": "BST",
+  "subs": [
+   {
+    "href": "/bst-ao-lop",
+    "label": "BST Áo Lớp"
+   },
+   {
+    "href": "/bst-ao-doanh-nghiep",
+    "label": "BST Áo Doanh Nghiệp"
+   },
+   {
+    "href": "/bst-ao-the-thao",
+    "label": "BST Áo Thể Thao"
+   }
+  ]
+ },
+ {
+  "href": "/thiet-ke",
+  "label": "Thiết kế",
+  "subs": [
+   {
+    "href": "/ao-lop",
+    "label": "ÁO LỚP"
+   },
+   {
+    "href": "/ao-nhom",
+    "label": "ÁO NHÓM"
+   },
+   {
+    "href": "/ao-cong-ty",
+    "label": "ÁO CÔNG TY"
+   },
+   {
+    "href": "/ao-the-thao",
+    "label": "ÁO THỂ THAO"
+   },
+   {
+    "href": "/phu-kien-1",
+    "label": "PHỤ KIỆN"
+   }
+  ]
+ },
+ {
+  "href": "/thong-tin",
+  "label": "BLOG",
+  "subs": [
+   {
+    "href": "/thong-tin",
+    "label": "THÔNG TIN"
+   },
+   {
+    "href": "/tin-tuc-ao-lop",
+    "label": "ÁO LỚP"
+   },
+   {
+    "href": "/tin-tuc-ao-doanh-nghiep",
+    "label": "ÁO DOANH NGHIỆP"
+   },
+   {
+    "href": "/cam-nang",
+    "label": "CẨM NANG"
+   },
+   {
+    "href": "/tin-tuc",
+    "label": "TIN TỨC"
+   },
+   {
+    "href": "/the-thao",
+    "label": "THỂ THAO"
+   }
+  ]
+ },
+ {
+  "href": "/cau-hoi-thuong-gap",
+  "label": "Faq",
+  "subs": []
+ }
+]
