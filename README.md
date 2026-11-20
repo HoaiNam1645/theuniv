@@ -4,6 +4,11 @@ Website clone giao diện [THEUNI.clothing](https://THEUNI.clothing) (Sapo theme
 
 ## Chạy dự án
 
+Cần **Node.js >= 20.9** (Next.js 16 không chạy trên Node 18). Khuyên dùng Node 24, ví dụ `nvm use 24`.
+
+> Máy dev nên trỏ `DATABASE_URL` vào database `theuniv_dev`, KHÔNG phải `theuniv` (production).
+> Không chạy `npm run seed` trên database đã có dữ liệu thật: seed ghi đè dữ liệu mẫu lên nội dung hiện có.
+
 ```bash
 npm install
 cp .env.example .env          # rồi điền DATABASE_URL (MongoDB Atlas) + AUTH_SECRET
