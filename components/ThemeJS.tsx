@@ -1,57 +1,76 @@
 "use client";
 
 import { useEffect } from "react";
+import { DRAWER, FILTER, NAV_ITEM_ATTR, NAV_LINK_ATTR, STATE_CLASS } from "@/lib/siteDom";
+
+/** Đường dẫn bỏ dấu "/" cuối, để "/tin-tuc/" và "/tin-tuc" là cùng một trang. */
+const normPath = (p: string) => p.replace(/\/+$/, "") || "/";
 
 export default function ThemeJS() {
   useEffect(() => {
-    const headerNav = document.querySelector(".header-nav");
-    const opacityMenu = document.querySelector(".opacity_menu");
+    const drawer = document.getElementById(DRAWER.ID);
     const backtop = document.querySelector(".backtop");
 
-    const closeMenu = () => {
-      headerNav?.classList.remove("current");
-      opacityMenu?.classList.remove("current");
+    const setDrawer = (open: boolean) => {
+      if (!drawer) return;
+      drawer.classList.toggle(STATE_CLASS.OPEN, open);
+      drawer.setAttribute("aria-hidden", String(!open));
+      document.documentElement.classList.toggle(STATE_CLASS.SCROLL_LOCK, open);
+      document
+        .querySelectorAll(`[${DRAWER.OPEN_ATTR}]`)
+        .forEach((b) => b.setAttribute("aria-expanded", String(open)));
     };
+
+    // Sáng mục menu ứng với trang đang xem (link trong RawPage là <a> thường nên mỗi
+    // lần chuyển trang là một lần tải lại — chạy một lần lúc mount là đủ).
+    const here = normPath(location.pathname);
+    document.querySelectorAll<HTMLAnchorElement>(`[${NAV_LINK_ATTR}]`).forEach((a) => {
+      const url = new URL(a.href, location.href);
+      if (url.origin !== location.origin || normPath(url.pathname) !== here) return;
+      a.classList.add(STATE_CLASS.ACTIVE);
+      a.closest(`[${NAV_ITEM_ATTR}]`)?.classList.add(STATE_CLASS.ACTIVE);
+    });
 
     const onClick = (e: MouseEvent) => {
       const t = e.target as HTMLElement;
 
-      if (t.closest(".menu-bar")) {
-        headerNav?.classList.add("current");
-        opacityMenu?.classList.add("current");
+      if (t.closest(`[${DRAWER.OPEN_ATTR}]`)) {
+        setDrawer(true);
         return;
       }
-      if (t.closest(".opacity_menu")) {
-        closeMenu();
+      if (t.closest(`[${DRAWER.CLOSE_ATTR}]`)) {
+        setDrawer(false);
         return;
       }
-      // mobile: caret mở/đóng menu con
-      if (window.innerWidth < 992) {
-        const caret = t.closest(".item_big > li > i.fa-caret-down");
-        if (caret) {
-          e.preventDefault();
-          caret.parentElement?.classList.toggle("open-sub");
-          return;
-        }
+      const subToggle = t.closest(`[${DRAWER.SUB_TOGGLE_ATTR}]`);
+      if (subToggle) {
+        const open = subToggle.closest("li")?.classList.toggle(STATE_CLASS.OPEN) ?? false;
+        subToggle.setAttribute("aria-expanded", String(open));
+        return;
       }
       if (t.closest(".backtop")) {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
-      // đóng menu khi bấm link điều hướng trong nav mobile
-      if (t.closest(".header-nav a[href]")) closeMenu();
+      // đóng drawer khi bấm link điều hướng bên trong
+      if (drawer && t.closest("a[href]") && drawer.contains(t)) setDrawer(false);
+    };
+
+    const closeFilters = () => {
+      document.querySelector(".dqdt-sidebar")?.classList.remove("open-mb");
+      document.querySelector(".opacity_sidebar")?.classList.remove("show");
+    };
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setDrawer(false);
+      closeFilters();
     };
 
     const onScroll = () => {
       if (window.scrollY > 300) backtop?.classList.add("show");
       else backtop?.classList.remove("show");
-      // trang sản phẩm: ghim bộ điều khiển thumbnail
-      const myHeader = document.getElementById("myHeader");
-      if (myHeader) {
-        if (window.pageYOffset > 1000) myHeader.classList.add("sticky");
-        else myHeader.classList.remove("sticky");
-      }
     };
 
     // Form tư vấn (theme Sapo cũ post về /postcontact) -> gửi vào API leads
@@ -184,23 +203,20 @@ export default function ThemeJS() {
       if (imgScroll) {
         e.preventDefault();
         const el = document.getElementById(imgScroll.dataset.scroll || "");
-        if (el) {
-          let yOffset = -90;
-          if (window.innerHeight - el.offsetHeight > 0) {
-            yOffset = -((window.innerHeight - el.offsetHeight) / 2) - 45;
-          }
-          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: "smooth" });
-        }
+        // Ảnh thấp hơn màn thì căn giữa; cao hơn thì đặt mép trên ngay dưới header (scroll-margin-top).
+        el?.scrollIntoView({ behavior: "smooth", block: el.offsetHeight < window.innerHeight ? "center" : "start" });
         return;
       }
-      // Cuộn mượt cho anchor nội trang (VD: NHẬN TƯ VẤN -> #contact-form-scroll)
+      // Cuộn mượt cho anchor nội trang (VD: NHẬN TƯ VẤN -> #contact-form-scroll). Tìm theo id chứ không
+      // theo selector: id sinh từ tiêu đề bài viết có thể chứa "?", ":", "(" — querySelector sẽ ném lỗi.
       const anchor = t.closest('a[href^="#"]') as HTMLAnchorElement | null;
-      if (anchor && anchor.getAttribute("href")!.length > 1 && !anchor.closest(".backtop")) {
-        const target = document.querySelector(anchor.getAttribute("href")!);
+      const hash = anchor?.getAttribute("href") ?? "";
+      if (anchor && hash.length > 1 && !anchor.closest(".backtop")) {
+        const target = document.getElementById(hash.slice(1));
         if (target) {
           e.preventDefault();
-          window.scrollTo({ top: (target as HTMLElement).getBoundingClientRect().top + window.pageYOffset - 90, behavior: "smooth" });
+          // Điểm dừng dưới header lấy từ scroll-margin-top ở site-layout.css.
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
         }
         return;
       }
@@ -210,10 +226,7 @@ export default function ThemeJS() {
         document.querySelector(".opacity_sidebar")?.classList.add("show");
         return;
       }
-      if (t.closest(".opacity_sidebar")) {
-        document.querySelector(".dqdt-sidebar")?.classList.remove("open-mb");
-        document.querySelector(".opacity_sidebar")?.classList.remove("show");
-      }
+      if (t.closest(`.opacity_sidebar, [${FILTER.CLOSE_ATTR}]`)) closeFilters();
     };
     document.addEventListener("click", onFilterUI);
 
@@ -249,10 +262,12 @@ export default function ThemeJS() {
     }
 
     document.addEventListener("click", onClick);
+    document.addEventListener("keydown", onKey);
     window.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("submit", onSubmit);
     return () => {
       document.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKey);
       document.removeEventListener("click", onFilterUI);
       document.removeEventListener("mouseover", onZoomOver);
       document.removeEventListener("mouseout", onZoomOut);

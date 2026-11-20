@@ -1,0 +1,69 @@
+/* Trang chi tiết sản phẩm (lib/productHtml.ts): sửa bố cục/vùng chạm trên nền markup + CSS theme gốc
+   (product_style.scss.css). Khung và khối dùng chung ở site-layout.css.
+
+   Mốc màn hình: 768px (Bootstrap md) — từ đây cột trái là cột thumbnail + dãy ảnh lớn, dưới đó là
+   gallery vuốt. Theme tách hai bố cục ở 767px cho cả hai phía nên đúng 767px không hiện ảnh nào. */
+
+:root {
+  /* Cột thumbnail và panel thông tin dính ngay dưới header cố định (header đổi cao theo mốc). */
+  --uni-pdp-sticky-top: calc(var(--uni-header-h) + var(--uni-anchor-gap));
+}
+
+.layout-product .details-pro { position: sticky; top: var(--uni-pdp-sticky-top); }
+
+/* Bảng thông số: nhãn và giá trị cùng một dòng chữ, cách hàng bằng nhịp đoạn văn của .rte. */
+.uni-pdp-specs td { padding: 0 0 16px; vertical-align: top; }
+.uni-pdp-specs td:first-child { padding-right: 10px; }
+
+/* ---------- Ảnh: gallery vuốt (<768px) ↔ cột thumbnail + dãy ảnh lớn (≥768px) ---------- */
+@media (max-width: 767.98px) {
+  /* Theme ẩn gallery từ 767px, còn bố cục ảnh lớn chỉ có từ 768px: đúng 767px trống ảnh. */
+  .layout-product .product-image-block { display: block; }
+  /* Khung ảnh vuông rộng bằng màn; theme để ảnh ở cỡ gốc (width:auto !important) nên ảnh nhỏ hơn
+     khung (600–767px) nằm giữa hai dải trống. min-width thắng width mà không cần !important. */
+  .layout-product .gallery-top .swiper-slide img { min-width: 100%; object-fit: contain; }
+
+  /* Mũi tên dãy thumbnail đứng hai bên dãy, không đè lên thumbnail đầu/cuối. */
+  .layout-product .no-thume { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .layout-product .no-thume .gallery-thumbs { flex: 1 1 0; min-width: 0; margin-top: 0; }
+  .layout-product .no-thume .swiper-button-prev { order: -1; }
+  .layout-product .no-thume .swiper-button-prev,
+  .layout-product .no-thume .swiper-button-next {
+    position: static;
+    flex: 0 0 var(--uni-tap);
+    width: var(--uni-tap);
+    height: var(--uni-tap);
+    margin: 0;
+    line-height: var(--uni-tap);
+  }
+}
+
+@media (min-width: 768px) {
+  /* Cột thumbnail dính trong cột trái và giữ chỗ trong luồng ngay từ đầu (không JS): hết dãy ảnh lớn
+     thì cuộn đi cùng cột, không trôi đè lên "THIẾT KẾ TƯƠNG TỰ"/form, không đẩy trang khi cuộn. */
+  .layout-product .product-detail-left { display: flex; align-items: flex-start; }
+  /* Rộng theo thumbnail cộng lề của nó (123px) — đúng chỗ margin-left cũ của dãy ảnh lớn. */
+  .layout-product .id_conten_design-right {
+    position: sticky;
+    top: var(--uni-pdp-sticky-top);
+    flex-shrink: 0;
+    width: auto;
+  }
+  .layout-product .product-detail-left .margin-left-sm-123 { flex: 1 1 0; min-width: 0; margin-left: 0; }
+}
+
+/* ---------- Vùng chạm ≥44px trên màn chạm (mốc như khối cuối site-layout.css) ---------- */
+@media (max-width: 1024px), (hover: none) {
+  .layout-product .btn-contact-form-scroll h2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--uni-tap);
+  }
+  /* Form tư vấn đầy đủ (richTuVanHtml) — cả trang sản phẩm lẫn bài viết. */
+  .section_nhan_tu_van .group_contact .btn-lienhe { min-height: var(--uni-tap); }
+  .productRelate .block-title h2 a { display: inline-flex; align-items: center; min-height: var(--uni-tap); }
+  .productRelate .product-name a { min-height: var(--uni-tap); }
+  .productRelate .swiper-button-prev,
+  .productRelate .swiper-button-next { width: var(--uni-tap); height: var(--uni-tap); line-height: var(--uni-tap); }
+}

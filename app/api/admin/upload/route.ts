@@ -1,27 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 import { getSession } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { MAX_UPLOAD_BYTES, UPLOAD_FIELD } from "@/lib/studio/constants";
+import { UPLOAD_ERROR, UploadError, saveImageBuffer } from "@/lib/uploads";
 
-// Ảnh upload: dev -> ./public/uploads ; prod -> UPLOAD_DIR (/var/www/theuniv/uploads, nginx serve)
-const ALLOWED: Record<string, string> = {
-  "image/jpeg": ".jpg",
-  "image/png": ".png",
-  "image/webp": ".webp",
-  "image/gif": ".gif",
-};
-const MAX_SIZE = 8 * 1024 * 1024;
-
-const slugify = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 40) || "anh";
+// Ảnh upload: dev -> ./public/uploads ; prod -> UPLOAD_DIR (/var/www/theuniv/uploads, nginx serve).
+// Việc ghi file + tạo bản ghi Media nằm ở lib/uploads.ts vì studio cũng cần đúng logic đó
+// nhưng nhận data URL thay vì multipart.
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
@@ -30,29 +14,23 @@ export async function POST(req: NextRequest) {
   }
 
   const fd = await req.formData();
-  const file = fd.get("file");
+  const file = fd.get(UPLOAD_FIELD.FILE);
   if (!(file instanceof File)) {
-    return NextResponse.json({ ok: false, error: "Thiếu file" }, { status: 422 });
-  }
-  const ext = ALLOWED[file.type];
-  if (!ext) {
-    return NextResponse.json(
-      { ok: false, error: "Chỉ nhận ảnh JPG, PNG, WEBP, GIF" },
-      { status: 422 }
-    );
-  }
-  if (file.size > MAX_SIZE) {
-    return NextResponse.json({ ok: false, error: "Ảnh tối đa 8MB" }, { status: 422 });
+    return NextResponse.json({ ok: false, error: UPLOAD_ERROR.MISSING_FILE }, { status: 422 });
   }
 
-  const base = slugify(file.name.replace(/\.[^.]+$/, ""));
-  const name = `${base}-${Date.now().toString(36)}${ext}`;
-  const dir = process.env.UPLOAD_DIR || path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(path.join(dir, name), Buffer.from(await file.arrayBuffer()));
-
-  const url = `/uploads/${name}`;
-  await db.media.create({ data: { path: url, size: file.size } });
-
-  return NextResponse.json({ ok: true, url });
+  try {
+    const { url } = await saveImageBuffer({
+      buffer: Buffer.from(await file.arrayBuffer()),
+      mime: file.type,
+      baseName: file.name.replace(/\.[^.]+$/, ""),
+      maxBytes: MAX_UPLOAD_BYTES,
+    });
+    return NextResponse.json({ ok: true, url });
+  } catch (e) {
+    if (e instanceof UploadError) {
+      return NextResponse.json({ ok: false, error: e.message }, { status: e.status });
+    }
+    throw e;
+  }
 }

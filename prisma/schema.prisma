@@ -1,27 +1,31 @@
 generator client {
   provider = "prisma-client-js"
-  // native = máy dev (macOS), debian-openssl-3.0.x = VPS Ubuntu 24.04
+  // native = máy dev (macOS), debian-openssl-3.0.x = VPS Ubuntu 24.04.
+  // Vẫn cần cả hai: build chạy ở macOS rồi rsync .next/standalone sang VPS (scripts/deploy.sh).
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+
+// MongoDB: id là ObjectId (chuỗi 24 hex), không có autoincrement và không có native type
+// kiểu MySQL (@db.Text/VarChar/Char). Đổi schema bằng `npm run db:push`, KHÔNG dùng prisma migrate.
 
 // ==== SẢN PHẨM ====
 
 model Category {
-  id             Int               @id @default(autoincrement())
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
   name           String
   slug           String            @unique
   kind           CategoryKind      @default(collection)
-  description    String?           @db.Text
+  description    String?
   bannerImage    String?           @map("banner_image")
   position       Int               @default(0)
   isActive       Boolean           @default(true) @map("is_active")
   seoTitle       String?           @map("seo_title")
-  seoDescription String?           @map("seo_description") @db.VarChar(500)
+  seoDescription String?           @map("seo_description")
   createdAt      DateTime          @default(now()) @map("created_at")
   updatedAt      DateTime          @updatedAt @map("updated_at")
   products       CategoryProduct[]
@@ -35,7 +39,7 @@ enum CategoryKind {
 }
 
 model ProductType {
-  id          Int       @id @default(autoincrement())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   slug        String    @unique
   image       String?
@@ -48,27 +52,31 @@ model ProductType {
 }
 
 model Product {
-  id             Int               @id @default(autoincrement())
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
   name           String
   slug           String            @unique
-  productTypeId  Int?              @map("product_type_id")
+  productTypeId  String?           @map("product_type_id") @db.ObjectId
   productType    ProductType?      @relation(fields: [productTypeId], references: [id])
   material       String?
   printMethod    String?           @map("print_method")
   form           String?
   code           String?
-  description    String?           @db.MediumText
+  description    String?
   status         ProductStatus     @default(active)
   position       Int               @default(0)
   viewCount      Int               @default(0) @map("view_count")
   seoTitle       String?           @map("seo_title")
-  seoDescription String?           @map("seo_description") @db.VarChar(500)
+  seoDescription String?           @map("seo_description")
   createdAt      DateTime          @default(now()) @map("created_at")
   updatedAt      DateTime          @updatedAt @map("updated_at")
   images         ProductImage[]
   categories     CategoryProduct[]
   tags           ProductTag[]
 
+  // Lưới danh mục / tìm kiếm: lọc status rồi sort position (equality -> sort)
+  @@index([status, position])
+  // Trang /ao-thun, /ao-polo...: lọc status + productTypeId rồi sort position
+  @@index([status, productTypeId, position])
   @@map("products")
 }
 
@@ -79,32 +87,38 @@ enum ProductStatus {
 }
 
 model ProductImage {
-  id        Int     @id @default(autoincrement())
-  productId Int     @map("product_id")
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  productId String  @map("product_id") @db.ObjectId
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  url       String  @db.VarChar(500)
+  url       String
   position  Int     @default(0)
 
+  @@index([productId, position])
   @@map("product_images")
 }
 
 model CategoryProduct {
-  categoryId Int      @map("category_id")
-  productId  Int      @map("product_id")
+  // MongoDB không hỗ trợ khoá chính ghép (@@id nhiều field) -> id thay thế,
+  // ràng buộc "1 sản phẩm chỉ vào 1 danh mục 1 lần" giữ bằng @@unique.
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  categoryId String   @map("category_id") @db.ObjectId
+  productId  String   @map("product_id") @db.ObjectId
   position   Int      @default(0)
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@id([categoryId, productId])
+  @@unique([categoryId, productId])
+  // @@unique đã phục vụ chiều categoryId; cần thêm chiều productId cho deleteMany khi lưu sản phẩm
+  @@index([productId])
   @@map("category_product")
 }
 
 model Tag {
-  id       Int          @id @default(autoincrement())
+  id       String       @id @default(auto()) @map("_id") @db.ObjectId
   name     String
   slug     String
   group    TagGroup
-  hexColor String?      @map("hex_color") @db.Char(7)
+  hexColor String?      @map("hex_color")
   position Int          @default(0)
   products ProductTag[]
 
@@ -116,22 +130,27 @@ enum TagGroup {
   phan_loai
   kieu_thiet_ke
   mau_sac
+  kich_thuoc
 }
 
 model ProductTag {
-  productId Int     @map("product_id")
-  tagId     Int     @map("tag_id")
+  // Cùng lý do với CategoryProduct: Mongo không có khoá chính ghép.
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  productId String  @map("product_id") @db.ObjectId
+  tagId     String  @map("tag_id") @db.ObjectId
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
-  @@id([productId, tagId])
+  @@unique([productId, tagId])
+  // Lọc sản phẩm theo tag ở sidebar danh mục đi từ tagId ngược về productId
+  @@index([tagId])
   @@map("product_tag")
 }
 
 // ==== BÀI VIẾT ====
 
 model ArticleCategory {
-  id       Int       @id @default(autoincrement())
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
   name     String
   slug     String    @unique
   position Int       @default(0)
@@ -142,24 +161,30 @@ model ArticleCategory {
 }
 
 model Article {
-  id                Int              @id @default(autoincrement())
-  title             String           @db.VarChar(500)
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  title             String
   slug              String           @unique
-  articleCategoryId Int?             @map("article_category_id")
+  articleCategoryId String?          @map("article_category_id") @db.ObjectId
   category          ArticleCategory? @relation(fields: [articleCategoryId], references: [id])
-  thumbnail         String?          @db.VarChar(500)
-  excerpt           String?          @db.VarChar(1000)
-  body              String?          @db.MediumText
+  thumbnail         String?
+  excerpt           String?
+  body              String?
   author            String?
   isFeatured        Boolean          @default(false) @map("is_featured")
   status            PublishStatus    @default(draft)
   publishedAt       DateTime?        @map("published_at")
   viewCount         Int              @default(0) @map("view_count")
   seoTitle          String?          @map("seo_title")
-  seoDescription    String?          @map("seo_description") @db.VarChar(500)
+  seoDescription    String?          @map("seo_description")
   createdAt         DateTime         @default(now()) @map("created_at")
   updatedAt         DateTime         @updatedAt @map("updated_at")
 
+  // Danh sách bài mới nhất (trang /tin-tuc khi chưa lọc chuyên mục)
+  @@index([status, publishedAt])
+  // Trang chuyên mục: lọc status + chuyên mục rồi sort publishedAt
+  @@index([status, articleCategoryId, publishedAt])
+  // Khối "bài viết nổi bật" trang chủ
+  @@index([status, isFeatured, publishedAt])
   @@map("articles")
 }
 
@@ -171,7 +196,7 @@ enum PublishStatus {
 // ==== FAQ ====
 
 model FaqCategory {
-  id       Int    @id @default(autoincrement())
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
   name     String
   position Int    @default(0)
   faqs     Faq[]
@@ -180,43 +205,48 @@ model FaqCategory {
 }
 
 model Faq {
-  id            Int         @id @default(autoincrement())
-  faqCategoryId Int         @map("faq_category_id")
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  faqCategoryId String      @map("faq_category_id") @db.ObjectId
   category      FaqCategory @relation(fields: [faqCategoryId], references: [id], onDelete: Cascade)
-  question      String      @db.VarChar(500)
-  answer        String      @db.MediumText
+  question      String
+  answer        String
   position      Int         @default(0)
   isActive      Boolean     @default(true) @map("is_active")
 
+  @@index([faqCategoryId, position])
   @@map("faqs")
 }
 
 // ==== TRANG & GIAO DIỆN ====
 
 model Page {
-  id             Int           @id @default(autoincrement())
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
   title          String
   slug           String        @unique
-  body           String?       @db.MediumText
+  body           String?
   status         PublishStatus @default(published)
   seoTitle       String?       @map("seo_title")
-  seoDescription String?       @map("seo_description") @db.VarChar(500)
+  seoDescription String?       @map("seo_description")
   updatedAt      DateTime      @updatedAt @map("updated_at")
 
   @@map("pages")
 }
 
 model Menu {
-  id       Int          @id @default(autoincrement())
+  id       String       @id @default(auto()) @map("_id") @db.ObjectId
   label    String
-  url      String       @db.VarChar(500)
-  parentId Int?         @map("parent_id")
-  parent   Menu?        @relation("MenuChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  url      String
+  parentId String?      @map("parent_id") @db.ObjectId
+  // Mongo emulate ràng buộc khoá ngoại ở tầng Prisma nên self-relation bắt buộc NoAction
+  // (tránh vòng lặp cascade). Xoá menu con được làm tường minh trong delMenu().
+  parent   Menu?        @relation("MenuChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children Menu[]       @relation("MenuChildren")
   location MenuLocation @default(header)
   position Int          @default(0)
   isActive Boolean      @default(true) @map("is_active")
 
+  // Header đọc menu ở MỌI trang -> index cho truy vấn location + sort position
+  @@index([location, position])
   @@map("menus")
 }
 
@@ -226,11 +256,11 @@ enum MenuLocation {
 }
 
 model Slider {
-  id           Int     @id @default(autoincrement())
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
   title        String?
-  imageDesktop String  @map("image_desktop") @db.VarChar(500)
-  imageMobile  String? @map("image_mobile") @db.VarChar(500)
-  link         String? @db.VarChar(500)
+  imageDesktop String  @map("image_desktop")
+  imageMobile  String? @map("image_mobile")
+  link         String?
   position     Int     @default(0)
   isActive     Boolean @default(true) @map("is_active")
 
@@ -238,11 +268,11 @@ model Slider {
 }
 
 model Banner {
-  id         Int     @id @default(autoincrement())
-  slot       String  @db.VarChar(50)
-  image      String  @db.VarChar(500)
-  link       String? @db.VarChar(500)
-  buttonText String? @map("button_text") @db.VarChar(100)
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  slot       String
+  image      String
+  link       String?
+  buttonText String? @map("button_text")
   position   Int     @default(0)
   isActive   Boolean @default(true) @map("is_active")
 
@@ -250,10 +280,10 @@ model Banner {
 }
 
 model BrandLogo {
-  id       Int     @id @default(autoincrement())
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
   title    String?
-  image    String  @db.VarChar(500)
-  link     String? @db.VarChar(500)
+  image    String
+  link     String?
   position Int     @default(0)
   isActive Boolean @default(true) @map("is_active")
 
@@ -261,11 +291,11 @@ model BrandLogo {
 }
 
 model Testimonial {
-  id       Int     @id @default(autoincrement())
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
   title    String
-  image    String  @db.VarChar(500)
-  quote    String  @db.Text
-  link     String? @db.VarChar(500)
+  image    String
+  quote    String
+  link     String?
   position Int     @default(0)
   isActive Boolean @default(true) @map("is_active")
 
@@ -273,8 +303,9 @@ model Testimonial {
 }
 
 model Setting {
-  key   String  @id
-  value String? @db.Text
+  // key chính là _id: setting tra cứu bằng tên, không cần id riêng
+  key   String  @id @map("_id")
+  value String?
 
   @@map("settings")
 }
@@ -282,19 +313,21 @@ model Setting {
 // ==== LEADS ====
 
 model Lead {
-  id        Int        @id @default(autoincrement())
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
   name      String
-  phone     String     @db.VarChar(20)
+  phone     String
   email     String?
   unit      String?
   product   String?
-  message   String?    @db.Text
-  sourceUrl String?    @map("source_url") @db.VarChar(500)
+  message   String?
+  sourceUrl String?    @map("source_url")
   status    LeadStatus @default(new)
-  note      String?    @db.Text
+  note      String?
   createdAt DateTime   @default(now()) @map("created_at")
 
-  @@index([status])
+  // Tab trạng thái ở /admin/leads: lọc status rồi sort createdAt desc
+  @@index([status, createdAt])
+  // Dashboard: đếm lead theo khoảng ngày + danh sách "đơn gần nhất"
   @@index([createdAt])
   @@map("leads")
 }
@@ -307,10 +340,125 @@ enum LeadStatus {
   lost
 }
 
+// ==== DESIGN STUDIO ====
+//
+// Shape công khai của ba model dưới đây khai ở lib/studio/types.ts (SSOT dùng chung
+// với route handler và client). Ở đây chỉ là lớp lưu trữ — đổi field thì đổi cả hai.
+
+/// Một màu áo trong bộ mockup: swatch + ảnh áo trơn từng mặt.
+/// Nhúng thẳng vào MockupSet (composite type của Mongo) chứ không tách collection:
+/// màu không có danh tính ngoài bộ của nó, luôn đọc kèm bộ, và một bộ chỉ vài chục màu
+/// -> tách bảng chỉ thêm một vòng query mà không đổi được gì.
+type MockupColor {
+  name  String
+  hex   String
+  /// Ảnh mặt trước. Bắt buộc: màu không có ảnh thì studio không dựng preview được.
+  front String
+  back  String?
+}
+
+/// Vùng in trên ảnh áo, lưu dạng phân số 0–1 để không phụ thuộc kích thước ảnh.
+/// anchor "center": x,y là tâm vùng in; "topleft": x,y là góc trên-trái.
+/// Diễn giải ra pixel là việc của resolveZonePx() ở lib/studio/geometry.ts — cả server
+/// (ghép ảnh bằng sharp) lẫn canvas đều gọi đúng hàm đó, không ai tự tính lại.
+type PrintAreaSpec {
+  x      Float
+  y      Float
+  w      Float
+  h      Float?
+  anchor String?
+}
+
+/// Bộ áo trơn theo màu, nguồn ảnh nền cho studio và cho ghép ảnh per-màu.
+///
+/// KHÔNG nhét JSON vào Setting.value: cột đó là String? — thêm bộ thứ N sẽ cắt cụt
+/// im lặng, không index được, không validate được shape, và mọi lần sửa một màu phải
+/// đọc-ghi lại toàn bộ chuỗi.
+model MockupSet {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  /// Định danh ổn định qua các lần nhập kho — script import upsert theo field này.
+  slug      String         @unique
+  printArea PrintAreaSpec? @map("print_area")
+  colors    MockupColor[]
+  isActive  Boolean        @default(true) @map("is_active")
+  position  Int            @default(0)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  // GET /api/studio/mockup-sets: lọc isActive rồi sort position
+  @@index([isActive, position])
+  @@map("mockup_sets")
+}
+
+/// Kho artwork sẵn sàng in mà người mua kéo vào canvas.
+model DesignAsset {
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  /// Mã in xưởng tra file bằng nó -> phải duy nhất, và cũng là khoá upsert khi nhập kho.
+  code           String            @unique
+  url            String
+  thumbUrl       String            @map("thumb_url")
+  /// Slug bộ sưu tập ("typography", "art1"...), KHÔNG phải ObjectId: bộ sưu tập là
+  /// nhãn phẳng trên asset chứ không phải bảng riêng.
+  collectionId   String            @map("collection_id")
+  collectionName String            @map("collection_name")
+  tags           String[]
+  status         DesignAssetStatus @default(published)
+  sortOrder      Int               @default(0) @map("sort_order")
+  /// Kích thước gốc, để đặt layer đúng tỉ lệ ngay lúc kéo vào canvas.
+  widthPx        Int?              @map("width_px")
+  heightPx       Int?              @map("height_px")
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  // Lưới kho ảnh khi đã chọn bộ sưu tập: lọc status + collectionId rồi sort sortOrder/createdAt
+  @@index([status, collectionId, sortOrder, createdAt(sort: Desc)])
+  // Lưới "tất cả" và ô tìm kiếm: lọc status rồi sort như trên
+  @@index([status, sortOrder, createdAt(sort: Desc)])
+  // Lọc theo tag (Mongo tự dựng multikey index cho mảng)
+  @@index([tags])
+  @@map("design_assets")
+}
+
+enum DesignAssetStatus {
+  draft
+  published
+}
+
+/// Một phiên studio đã lưu — bản nháp của người mua, đồng thời là bản ghi đứng sau
+/// mã thiết kế gửi qua Zalo. Không có nó thì mã tra ra số không và xưởng mất artwork.
+model DesignDraft {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  /// Mã ngắn đọc được qua điện thoại (lib/studio/server.ts sinh, tránh 0/O, 1/I/L).
+  code        String    @unique
+  /// CanvasLayer[] — lưu Json vì layer là cây thuộc tính của canvas, chỉ đọc-ghi
+  /// nguyên khối, không bao giờ query theo field bên trong.
+  layers      Json
+  /// Chủ ý KHÔNG khai @relation: admin xoá một bộ mockup không được phép làm hỏng
+  /// đơn hàng đã chốt. Draft giữ id "chết" và route đọc tường minh, thiếu thì báo rõ.
+  mockupSetId String?   @map("mockup_set_id") @db.ObjectId
+  colorName   String?   @map("color_name")
+  surfaceId   String?   @map("surface_id")
+  previewUrl  String?   @map("preview_url")
+  printUrl    String?   @map("print_url")
+  assetCodes  String[]  @map("asset_codes")
+  note        String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  /// Hạn tra mã. Prisma KHÔNG khai được TTL index của Mongo, nên hạn dùng được ép ở
+  /// tầng đọc (GET drafts/[code] trả 404 khi quá hạn) — đúng kể cả khi chưa ai tạo
+  /// index. Muốn thu hồi cả dung lượng thì tạo TTL index một lần ngoài Prisma:
+  /// db.design_drafts.createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 })
+  expiresAt   DateTime? @map("expires_at")
+
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@map("design_drafts")
+}
+
 // ==== HỆ THỐNG ====
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String   @unique
   password  String
@@ -326,8 +474,8 @@ enum UserRole {
 }
 
 model Media {
-  id        Int      @id @default(autoincrement())
-  path      String   @db.VarChar(500)
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  path      String
   alt       String?
   size      Int?
   width     Int?

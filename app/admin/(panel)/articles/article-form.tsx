@@ -1,26 +1,21 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import UploadInput from "@/components/admin/UploadInput";
 import RichText from "@/components/admin/RichText";
+import SeoChecklist from "@/components/admin/SeoChecklist";
 import { flash } from "@/lib/flash";
+import { oid } from "@/lib/mongo";
+import { slugify } from "@/lib/slug";
 import type { Article, PublishStatus } from "@prisma/client";
-
-const slugify = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 
 export default async function ArticleForm({ article }: { article?: Article }) {
   const cats = await db.articleCategory.findMany({ orderBy: { position: "asc" } });
 
   async function save(formData: FormData) {
     "use server";
-    const id = formData.get("id") ? Number(formData.get("id")) : null;
+    const id = oid(formData.get("id")) || null;
     const title = String(formData.get("title") || "").trim();
     if (!title) redirect(id ? `/admin/articles/${id}` : "/admin/articles/new");
     const slug = slugify(String(formData.get("slug") || "") || title);
@@ -29,7 +24,7 @@ export default async function ArticleForm({ article }: { article?: Article }) {
     const data = {
       title,
       slug,
-      articleCategoryId: formData.get("categoryId") ? Number(formData.get("categoryId")) : null,
+      articleCategoryId: oid(formData.get("categoryId")) || null,
       thumbnail: String(formData.get("thumbnail") || "") || null,
       excerpt: String(formData.get("excerpt") || "") || null,
       body: String(formData.get("body") || "") || null,
@@ -48,7 +43,7 @@ export default async function ArticleForm({ article }: { article?: Article }) {
   }
 
   return (
-    <form className="edit-form" action={save}>
+    <form id="article-form" className="edit-form" action={save}>
       {article && <input type="hidden" name="id" value={article.id} />}
       <div className="edit-grid">
         <div className="edit-main panel">
@@ -102,17 +97,20 @@ export default async function ArticleForm({ article }: { article?: Article }) {
             </label>
             {article?.thumbnail && (
               <div className="img-preview">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={article.thumbnail} alt="" />
               </div>
             )}
           </div>
+
+          {/* Chấm SEO ngay trên nội dung đang soạn — không thêm ô nhập nào, mọi
+              tiêu chí suy ra từ thứ người viết đã gõ. */}
+          <SeoChecklist formId="article-form" />
         </div>
       </div>
 
       <div className="edit-actions">
         <button className="btn" type="submit">Lưu bài viết</button>
-        <a href="/admin/articles">Hủy bỏ</a>
+        <Link href="/admin/articles">Hủy bỏ</Link>
       </div>
     </form>
   );

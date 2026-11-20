@@ -85,8 +85,8 @@ export default async function SettingsPage({
 
       <div className="panel" style={{ padding: 18, maxWidth: 480 }}>
         <h3 className="panel-mini-title">Tên hiển thị</h3>
-        <form action={changeName} style={{ display: "flex", gap: 8 }}>
-          <input name="name" defaultValue={session?.name || ""} style={{ flex: 1 }} />
+        <form action={changeName} className="inline-form">
+          <input name="name" defaultValue={session?.name || ""} className="is-fill" />
           <button className="btn-outline" type="submit">Lưu tên</button>
         </form>
       </div>

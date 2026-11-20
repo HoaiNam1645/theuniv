@@ -1,0 +1,268 @@
+/* ==========================================================================
+   TRANG CHỦ — markup ở lib/homeHtml.ts
+   Container, section, đầu section, nút, lưới, card lấy từ site-layout.css; file
+   này chỉ thêm phần riêng của trang chủ. Mốc màn hình dùng đúng các mốc khai ở
+   đầu site-layout.css (1199 / 1024 + màn chạm / 900 / 768).
+   ========================================================================== */
+
+/* Thứ tự section do admin quyết: ngăn cách bằng đường kẻ thay vì đổi nền xen kẽ. */
+.home-section + .home-section { border-top: 1px solid var(--uni-line); }
+
+/* Tiêu đề section trang chủ vẫn viết hoa như trước — vài tiêu đề mặc định gõ chữ thường.
+   Chia dòng đều để tiêu đề dài không để một chữ lẻ rơi xuống dòng cuối. */
+.home-section .uni-section-head__title { text-transform: uppercase; text-wrap: balance; }
+
+/* ---------- Slider đầu trang: khung ảnh bo góc + cụm nút bên dưới ---------- */
+.home-hero { padding: 32px 0 var(--uni-section-y); }
+.home-hero__slider {
+  --hero-dot: 10px;
+  background: var(--uni-surface);
+  border: 1px solid var(--uni-line);
+  border-radius: var(--uni-radius-lg);
+  box-shadow: var(--uni-shadow);
+}
+.home-hero__link { display: block; }
+.home-hero__img { display: block; width: 100%; height: auto; }
+/* Trước khi swiper chạy, hàng slide cao bằng slide CAO NHẤT (ảnh mobile dọc), rồi autoHeight co về
+   slide đầu: CTA nhảy lúc tải. Chỉ slide đầu (slide đang thấy) chiếm chỗ cho tới khi swiper gắn class. */
+.home-hero__slider:not(.swiper-container-initialized) .swiper-slide:not(:first-child) { display: none; }
+.home-hero__slider .swiper-button-prev,
+.home-hero__slider .swiper-button-next {
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  color: var(--uni-text);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--uni-line-strong);
+  border-radius: 50%;
+  transition: background-color var(--uni-ease-fast), color var(--uni-ease-fast), border-color var(--uni-ease-fast);
+}
+.home-hero__slider .swiper-button-prev { left: 16px; }
+.home-hero__slider .swiper-button-next { right: 16px; }
+.home-hero__slider .swiper-button-prev::after,
+.home-hero__slider .swiper-button-next::after { font-size: 18px; font-weight: 700; color: inherit; }
+.home-hero__slider .swiper-button-prev:hover,
+.home-hero__slider .swiper-button-next:hover { color: var(--textColor); background: var(--mainColor); border-color: var(--mainColor); }
+/* Chấm vẽ bằng ::before để vùng chạm (khối cuối file) lớn hơn chấm mà chấm không đổi cỡ. */
+.home-hero__slider .swiper-pagination-bullet {
+  position: relative;
+  width: var(--hero-dot);
+  height: var(--hero-dot);
+  background: none;
+  opacity: 1;
+}
+.home-hero__slider .swiper-pagination-bullet::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--hero-dot);
+  height: var(--hero-dot);
+  border: 1px solid var(--uni-text);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.home-hero__slider .swiper-pagination-bullet-active::before { background: var(--mainColor); border-color: var(--mainColor); }
+.home-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+/* ---------- Ô ảnh banner (khu 4 ô + sản xuất đồng phục) ---------- */
+/* Ô có aspect-ratio trong lưới mặc định co theo ảnh thay vì giãn hết ô lưới — giãn tường minh. */
+.home-tile {
+  position: relative;
+  display: block;
+  justify-self: stretch;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--uni-surface);
+  border: 1px solid var(--uni-line);
+  border-radius: var(--uni-radius-md);
+}
+a.home-tile { transition: transform var(--uni-ease), box-shadow var(--uni-ease), border-color var(--uni-ease); }
+a.home-tile:hover { transform: translateY(-4px); box-shadow: var(--uni-shadow); border-color: var(--uni-line-strong); }
+.home-tile__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+a.home-tile:hover .home-tile__img { transform: scale(1.04); }
+.home-tile__cta { position: absolute; left: 20px; right: 20px; bottom: 20px; z-index: 1; }
+
+/* Khu 4 ô: banner lớn trên 2 ô vuông, banner dọc phủ cả cột phải. */
+.home-mosaic { display: grid; gap: 20px; }
+.home-mosaic--split {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas: "wide wide side" "sq1 sq2 side";
+}
+.home-mosaic--stack {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas: "wide wide" "sq1 sq2";
+}
+/* Tỉ lệ theo khổ ảnh ghi ở gợi ý admin (900×411, 450×450): ô giữ khung kể cả khi ảnh lỗi. */
+.home-tile--wide { grid-area: wide; aspect-ratio: 900 / 411; }
+.home-tile--sq1 { grid-area: sq1; aspect-ratio: 1; }
+.home-tile--sq2 { grid-area: sq2; aspect-ratio: 1; }
+.home-tile--side { grid-area: side; }
+.home-tile--side .home-tile__img { position: absolute; inset: 0; }
+.home-mosaic--loose { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.home-mosaic--loose .home-tile { grid-area: auto; aspect-ratio: 1; }
+.home-mosaic--loose .home-tile__img { position: absolute; inset: 0; }
+
+/* Sản xuất đồng phục: mỗi hàng 1 ảnh vuông + 1 ảnh ngang 1/3 – 2/3, hàng chẵn đảo bên. */
+.home-pairs { display: flex; flex-direction: column; gap: 20px; }
+.home-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-areas: "square banner";
+  gap: 20px;
+}
+.home-pair--rev {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-areas: "banner square";
+}
+.home-tile--square { grid-area: square; aspect-ratio: 1; align-self: stretch; }
+.home-tile--banner { grid-area: banner; aspect-ratio: 900 / 430; align-self: stretch; }
+.home-tile--square .home-tile__img,
+.home-tile--banner .home-tile__img { position: absolute; inset: 0; }
+/* Ảnh ngang chừa sẵn góc trống cùng phía với chữ in trên ảnh — nút đặt vào đó. */
+.home-pair .home-tile__cta { left: 24px; right: auto; bottom: 24px; }
+.home-pair--rev .home-tile__cta { left: auto; right: 24px; }
+
+/* ---------- Lưới logo + phản hồi ----------
+   Số mục do admin nhập: hàng flex chia đúng --home-cols cột và căn giữa, nên hàng cuối thiếu mục nằm
+   giữa thay vì để một ô lẻ lệch trái. */
+.home-logos,
+.home-reviews {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--home-gap);
+}
+.home-logos > *,
+.home-reviews > * { flex: 0 0 calc((100% - (var(--home-cols) - 1) * var(--home-gap)) / var(--home-cols)); }
+
+/* ---------- Logo khách hàng ---------- */
+.home-logos { --home-cols: 7; --home-gap: 16px; }
+.home-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96px;
+  padding: 14px 16px;
+  background: var(--uni-surface);
+  border: 1px solid var(--uni-line);
+  border-radius: var(--uni-radius-md);
+}
+a.home-logo { transition: transform var(--uni-ease-fast), box-shadow var(--uni-ease-fast), border-color var(--uni-ease-fast); }
+a.home-logo:hover { transform: translateY(-3px); box-shadow: var(--uni-shadow); border-color: var(--uni-line-strong); }
+.home-logo__img { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* ---------- Phản hồi khách hàng ---------- */
+.home-reviews { --home-cols: 3; --home-gap: 20px; }
+.home-review__thumb {
+  display: block;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--uni-surface-raised);
+}
+.home-review__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.home-review:hover .home-review__img { transform: scale(1.04); }
+.home-review__body { display: flex; flex-direction: column; flex-grow: 1; padding: 22px; }
+.home-review__quote {
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+  font-size: 14.5px;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--uni-text-muted);
+}
+.home-review__name {
+  margin: auto 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--uni-line);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--uni-text);
+}
+.home-review__name a { color: inherit; text-decoration: none; }
+.home-review__name a:hover { color: var(--mainColor); }
+
+@media (max-width: 1199px) {
+  .home-logos { --home-cols: 6; }
+}
+
+@media (max-width: 900px) {
+  .home-logos { --home-cols: 5; }
+  /* Một cột: giới hạn bề ngang để ảnh 3:2 không cao quá một màn hình. */
+  .home-reviews { --home-cols: 1; max-width: 560px; margin: 0 auto; }
+}
+
+@media (max-width: 768px) {
+  .home-hero { padding-top: 16px; }
+  .home-hero__slider { border-radius: var(--uni-radius-md); }
+  /* Điện thoại vuốt để chuyển slide; mũi tên chỉ che ảnh. */
+  .home-hero__slider .swiper-button-prev,
+  .home-hero__slider .swiper-button-next { display: none; }
+  .home-hero__cta { gap: 10px; margin-top: 16px; }
+  .home-hero__cta .uni-btn { flex: 1; padding: 13px 10px; font-size: 14px; }
+
+  .home-mosaic { gap: 10px; }
+  .home-mosaic--split {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas: "wide wide" "sq1 side" "sq2 side";
+  }
+  .home-mosaic--loose { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-tile__cta { left: 10px; right: 10px; bottom: 10px; padding: 8px 6px; font-size: 12px; }
+
+  /* Ảnh ngang xếp dọc hết bề ngang; ảnh vuông gom thành một hàng 3 ô ở cuối. */
+  .home-pairs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .home-pair { display: contents; }
+  .home-tile--square,
+  .home-tile--banner { grid-area: auto; }
+  .home-tile--banner { grid-column: 1 / -1; }
+  .home-tile--square { order: 1; }
+  .home-pair .home-tile__cta { left: 12px; bottom: 12px; padding: 8px 12px; }
+  .home-pair--rev .home-tile__cta { left: auto; right: 12px; }
+
+  .home-logos { --home-cols: 3; --home-gap: 10px; }
+  .home-logo { height: 76px; padding: 10px; }
+
+  .home-reviews { --home-gap: 16px; }
+  .home-review__body { padding: 16px; }
+}
+
+/* ---------- Vùng chạm ≥44px trên màn chạm (cùng mốc khối cuối site-layout.css) ---------- */
+@media (max-width: 1024px), (hover: none) {
+  /* 9 slide × 44px đã rộng hơn điện thoại: mỗi chấm có vùng chạm cao --uni-tap, rộng tới --uni-tap rồi
+     co đều, sát nhau — chạm lệch thì sang chấm bên cạnh; ngoài dải chấm vẫn là link của ảnh. */
+  .home-hero__slider > .swiper-pagination-bullets {
+    display: flex;
+    justify-content: center;
+    bottom: 0;
+    pointer-events: none;
+  }
+  .home-hero__slider > .swiper-pagination-bullets .swiper-pagination-bullet {
+    flex: 0 1 var(--uni-tap);
+    height: var(--uni-tap);
+    margin: 0;
+    pointer-events: auto;
+  }
+
+  .home-review__name:has(> a) { padding-top: 0; }
+  .home-review__name a { display: flex; align-items: center; min-height: var(--uni-tap); }
+}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
@@ -5,19 +6,18 @@ import type { Prisma, ProductStatus } from "@prisma/client";
 import ImagesField from "@/components/admin/ImagesField";
 import RichText from "@/components/admin/RichText";
 import { flash } from "@/lib/flash";
+import { oid } from "@/lib/mongo";
+import {
+  PRODUCT_STATUS_LABEL,
+  PRODUCT_STATUS_ORDER,
+  TAG_GROUP_LABEL,
+  TAG_GROUP_ORDER,
+  saveProduct,
+} from "@/lib/products";
 
 type ProductWithRels = Prisma.ProductGetPayload<{
   include: { images: true; categories: true; tags: true };
 }>;
-
-const slugify = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 
 export default async function ProductForm({ product }: { product?: ProductWithRels }) {
   const [categories, types, tags] = await Promise.all([
@@ -28,60 +28,32 @@ export default async function ProductForm({ product }: { product?: ProductWithRe
 
   const selectedCats = new Set(product?.categories.map((c) => c.categoryId) || []);
   const selectedTags = new Set(product?.tags.map((t) => t.tagId) || []);
-  const tagGroups: { key: string; label: string }[] = [
-    { key: "phan_loai", label: "Phân loại" },
-    { key: "kieu_thiet_ke", label: "Kiểu thiết kế" },
-    { key: "mau_sac", label: "Màu sắc" },
-  ];
 
   async function save(formData: FormData) {
     "use server";
-    const id = formData.get("id") ? Number(formData.get("id")) : null;
+    const id = oid(formData.get("id")) || null;
     const name = String(formData.get("name") || "").trim();
     if (!name) redirect(id ? `/admin/products/${id}` : "/admin/products/new");
-    const slug = slugify(String(formData.get("slug") || "") || name);
-    const images = String(formData.get("images") || "")
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const catIds = formData.getAll("categories").map(Number);
-    const tagIds = formData.getAll("tags").map(Number);
 
-    const data = {
+    // Ghi qua saveProduct() — cùng đường mà studio thiết kế dùng để xuất bản.
+    await saveProduct({
+      id,
       name,
-      slug,
-      productTypeId: formData.get("productTypeId") ? Number(formData.get("productTypeId")) : null,
+      slug: String(formData.get("slug") || ""),
+      productTypeId: oid(formData.get("productTypeId")) || null,
       material: String(formData.get("material") || "") || null,
       printMethod: String(formData.get("printMethod") || "") || null,
       form: String(formData.get("form") || "") || null,
       code: String(formData.get("code") || "") || null,
       description: String(formData.get("description") || "") || null,
       status: String(formData.get("status")) as ProductStatus,
-    };
-
-    let pid: number;
-    if (id) {
-      await db.product.update({ where: { id }, data });
-      await db.productImage.deleteMany({ where: { productId: id } });
-      await db.categoryProduct.deleteMany({ where: { productId: id } });
-      await db.productTag.deleteMany({ where: { productId: id } });
-      pid = id;
-    } else {
-      const created = await db.product.create({ data });
-      pid = created.id;
-    }
-    if (images.length)
-      await db.productImage.createMany({
-        data: images.map((url, i) => ({ productId: pid, url, position: i })),
-      });
-    if (catIds.length)
-      await db.categoryProduct.createMany({
-        data: catIds.map((categoryId) => ({ categoryId, productId: pid })),
-      });
-    if (tagIds.length)
-      await db.productTag.createMany({
-        data: tagIds.map((tagId) => ({ productId: pid, tagId })),
-      });
+      imageUrls: String(formData.get("images") || "")
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      categoryIds: formData.getAll("categories").map(String),
+      tagIds: formData.getAll("tags").map(String),
+    });
 
     await flash(id ? "Đã lưu sản phẩm" : "Đã thêm sản phẩm mới");
     revalidatePath("/admin/products");
@@ -130,9 +102,9 @@ export default async function ProductForm({ product }: { product?: ProductWithRe
             <label>
               Trạng thái
               <select name="status" defaultValue={product?.status || "active"}>
-                <option value="active">Hiển thị</option>
-                <option value="hidden">Ẩn</option>
-                <option value="draft">Nháp</option>
+                {PRODUCT_STATUS_ORDER.map((s) => (
+                  <option key={s} value={s}>{PRODUCT_STATUS_LABEL[s]}</option>
+                ))}
               </select>
             </label>
             <label>
@@ -167,12 +139,12 @@ export default async function ProductForm({ product }: { product?: ProductWithRe
             </div>
           </div>
 
-          {tagGroups.map((g) => (
-            <div className="panel" key={g.key}>
-              <h3>{g.label}</h3>
+          {TAG_GROUP_ORDER.map((g) => (
+            <div className="panel" key={g}>
+              <h3>{TAG_GROUP_LABEL[g]}</h3>
               <div className="check-list">
                 {tags
-                  .filter((t) => t.group === g.key)
+                  .filter((t) => t.group === g)
                   .map((t) => (
                     <label key={t.id} className="check">
                       <input
@@ -195,7 +167,7 @@ export default async function ProductForm({ product }: { product?: ProductWithRe
 
       <div className="edit-actions">
         <button className="btn" type="submit">Lưu sản phẩm</button>
-        <a href="/admin/products">Hủy bỏ</a>
+        <Link href="/admin/products">Hủy bỏ</Link>
       </div>
     </form>
   );

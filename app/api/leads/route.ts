@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { parseLeadInput } from "@/lib/leads";
 
-// Form tư vấn ngoài web gửi về đây (public)
+// Form tư vấn ngoài web gửi về đây (public). Luật hợp lệ nằm ở lib/leads.ts vì
+// /api/studio/order cũng tạo Lead và phải theo đúng luật đó.
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
@@ -10,32 +12,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "invalid json" }, { status: 400 });
   }
 
-  const name = String(body.name || "").trim();
-  const phone = String(body.phone || "").trim();
-  if (!name || !phone) {
-    return NextResponse.json(
-      { ok: false, error: "Vui lòng nhập họ tên và số điện thoại" },
-      { status: 422 }
-    );
-  }
-  if (!/^[0-9+ .()-]{8,20}$/.test(phone)) {
-    return NextResponse.json(
-      { ok: false, error: "Số điện thoại không hợp lệ" },
-      { status: 422 }
-    );
+  const parsed = parseLeadInput(body);
+  if ("error" in parsed) {
+    return NextResponse.json({ ok: false, error: parsed.error }, { status: 422 });
   }
 
-  const lead = await db.lead.create({
-    data: {
-      name: name.slice(0, 255),
-      phone: phone.slice(0, 20),
-      email: body.email ? String(body.email).slice(0, 255) : null,
-      unit: body.unit ? String(body.unit).slice(0, 255) : null,
-      product: body.product ? String(body.product).slice(0, 255) : null,
-      message: body.message ? String(body.message).slice(0, 2000) : null,
-      sourceUrl: body.sourceUrl ? String(body.sourceUrl).slice(0, 500) : null,
-    },
-  });
-
+  const lead = await db.lead.create({ data: parsed.data });
   return NextResponse.json({ ok: true, id: lead.id });
 }

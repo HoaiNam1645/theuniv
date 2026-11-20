@@ -1,0 +1,240 @@
+/* Bố cục trang lưới sản phẩm: danh mục, BST, loại sản phẩm, tìm kiếm (lib/collectionHtml.ts).
+   Khung, thẻ sản phẩm và khối dùng chung ở site-layout.css. Phân trang cũng nằm ở đây
+   vì trang chuyên mục bài viết dùng chung buildPaginationHtml. */
+
+:root {
+  /* Ngay trên lớp phủ .opacity_sidebar (999999, custom.css) mà bộ lọc mở cùng. */
+  --uni-z-filter: 1000000;
+}
+
+/* ---------- Khung trang: thanh công cụ → lưới → phân trang ---------- */
+.uni-listing { padding: 36px 0 var(--uni-section-y); }
+/* Khối tư vấn ngay sau lưới: một khoảng cách, không cộng dồn padding hai section. */
+.uni-listing:has(+ .uni-cta) { padding-bottom: var(--uni-head-gap); }
+.uni-listing + .uni-cta { padding-top: 0; }
+
+.uni-listing__bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.uni-listing__search { flex: 0 1 360px; }
+.uni-listing__search .search-auto.form-control { width: 100%; height: 44px; }
+.uni-listing__search .uni-search__btn { right: 6px; }
+
+.uni-listing__filter-btn {
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0 20px;
+  font-size: 14px;
+  border-radius: var(--uni-radius-full);
+}
+.uni-listing__filter-btn svg { width: 15px; height: 15px; }
+.uni-listing__filter-btn.is-active { color: var(--mainColor); border-color: var(--mainColor); }
+.uni-listing__filter-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  color: var(--textColor);
+  background: var(--mainColor);
+  border-radius: var(--uni-radius-full);
+}
+
+.uni-listing__tabs { display: flex; gap: 8px; flex-shrink: 0; }
+.uni-listing__tab {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--uni-text);
+  border: 1px solid var(--uni-line-strong);
+  border-radius: var(--uni-radius-full);
+  text-decoration: none;
+  transition: color var(--uni-ease-fast), border-color var(--uni-ease-fast);
+}
+.uni-listing__tab:hover { color: var(--mainColor); border-color: var(--mainColor); text-decoration: none; }
+.uni-listing__tab.is-active,
+.uni-listing__tab.is-active:hover { color: var(--textColor); background: var(--mainColor); border-color: var(--mainColor); }
+
+.uni-listing__empty {
+  padding: 56px 24px;
+  text-align: center;
+  background: var(--uni-surface);
+  border: 1px dashed var(--uni-line-strong);
+  border-radius: var(--uni-radius-lg);
+}
+/* Tiêu đề có nguyên từ khoá khách gõ: một chuỗi liền không dấu cách vẫn phải xuống dòng trong khung. */
+.uni-listing__empty-title { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.5; color: var(--uni-text); overflow-wrap: anywhere; }
+.uni-listing__empty-hint { margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: var(--uni-text-muted); }
+
+.uni-listing__pager { margin-top: 40px; }
+
+@media (max-width: 768px) {
+  .uni-listing { padding-top: 24px; }
+  .uni-listing__bar { gap: 8px; margin-bottom: 20px; }
+  /* Ô tìm không co nhỏ hơn placeholder (chữ 16px) cộng padding hai bên. Hàng không đủ chỗ (máy hẹp,
+     nút lọc đang hiện số) thì nút lọc xuống hàng dưới và kéo hết hàng; tỉ lệ co giãn 999:1 để khi
+     còn chung một hàng, phần dư gần như toàn bộ về ô tìm. */
+  .uni-listing__search { flex: 999 1 170px; min-width: 0; }
+  .uni-listing__filter-btn { flex-grow: 1; }
+  /* Dưới 16px iOS tự phóng to trang khi bấm vào ô (xem custom.css). */
+  .uni-listing__search .search-auto.form-control { font-size: 16px; }
+  .uni-listing__filter-btn,
+  .uni-listing__tab { padding: 0 14px; }
+  .uni-listing__empty { padding: 40px 16px; }
+  .uni-listing__pager { margin-top: 28px; }
+}
+
+/* ---------- Bộ lọc: panel trượt từ phải ở mọi khổ màn hình ----------
+   Mở/đóng do ThemeJS gắn .open-mb (panel) và .show (lớp phủ); hai trạng thái đó ở custom.css. */
+.uni-filter {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--uni-z-filter);
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  max-width: 85vw;
+  padding: 24px;
+  overflow-y: auto;
+  background: var(--uni-surface);
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.5);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform var(--uni-ease), visibility var(--uni-ease);
+}
+html:has(.uni-filter.open-mb) { overflow: hidden; }
+.opacity_sidebar { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+
+.uni-filter__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--uni-line);
+}
+.uni-filter__title { margin: 0; font-size: 18px; font-weight: 800; color: var(--uni-text); }
+.uni-filter__close {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--uni-text-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.uni-filter__group { border-bottom: 1px solid var(--uni-line); }
+.uni-filter .uni-filter__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--uni-text);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.uni-filter .down_icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+.uni-filter .down_icon::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--uni-ease-fast);
+}
+.uni-filter .down_icon.cls_mn::before { transform: translateY(2px) rotate(-135deg); }
+.uni-filter__options { list-style: none; margin: 0; padding: 0 0 12px; }
+.uni-filter__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--uni-text-muted);
+  cursor: pointer;
+}
+.uni-filter__option:hover { color: var(--uni-text); }
+.uni-filter__option input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--mainColor);
+  cursor: pointer;
+}
+.uni-filter__option input:checked ~ span { font-weight: 700; color: var(--uni-text); }
+.uni-filter__swatch {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--uni-line-strong);
+  border-radius: 50%;
+}
+
+/* ---------- Phân trang (lưới sản phẩm + chuyên mục bài viết) ---------- */
+.uni-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.uni-pagination__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--uni-text);
+  background: var(--uni-surface);
+  border: 1px solid var(--uni-line-strong);
+  border-radius: var(--uni-radius-full);
+  text-decoration: none;
+  transition: color var(--uni-ease-fast), border-color var(--uni-ease-fast);
+}
+a.uni-pagination__link:hover { color: var(--mainColor); border-color: var(--mainColor); text-decoration: none; }
+.uni-pagination__link[aria-current] { color: var(--textColor); background: var(--mainColor); border-color: var(--mainColor); }
+.uni-pagination__link--disabled { opacity: 0.3; }
+.uni-pagination__gap { min-width: 20px; text-align: center; color: var(--uni-text-subtle); }
+
+/* ---------- Vùng chạm ≥44px trên màn chạm (mốc như khối cuối site-layout.css) ---------- */
+@media (max-width: 1024px), (hover: none) {
+  /* Kính lúp cao bằng cả ô (site-layout.css): sát mép phải, không lấn vào padding chừa cho chữ. */
+  .uni-listing__search .uni-search__btn { right: 0; }
+  .uni-filter__close { width: var(--uni-tap); height: var(--uni-tap); }
+  .uni-filter__option { min-height: var(--uni-tap); }
+  .uni-pagination__link { min-width: var(--uni-tap); height: var(--uni-tap); }
+}

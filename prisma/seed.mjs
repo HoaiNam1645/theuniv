@@ -1,7 +1,10 @@
+// Seed dữ liệu gốc cho MongoDB. Chạy: npm run db:push && npm run seed
+// Idempotent: mọi bản ghi upsert theo slug/key (Mongo không có autoincrement để dựa vào id số).
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { STUDIO_MENU_LABEL, STUDIO_PATH } from "../lib/studio/paths.mjs";
 
 const prisma = new PrismaClient();
 const read = (f) => JSON.parse(readFileSync(join(process.cwd(), "data", f), "utf8"));
@@ -19,22 +22,36 @@ async function main() {
   // ==== ADMIN USER ====
   // Mật khẩu lấy từ biến môi trường; nếu không có thì sinh ngẫu nhiên và in ra
   // (không hardcode mật khẩu vào code để an toàn khi đưa lên git).
-  let password = process.env.SEED_ADMIN_PASSWORD;
-  if (!password) {
-    password = crypto.randomUUID().slice(0, 12);
-    console.log(`⚠ Chưa đặt SEED_ADMIN_PASSWORD — mật khẩu admin tạm: ${password}`);
-  }
+  //
+  // Đặt SEED_ADMIN_PASSWORD thì mật khẩu được ĐẶT LẠI, kể cả khi user đã tồn tại.
+  // Trước đây nhánh update để rỗng, nên mật khẩu ngẫu nhiên in ra ở lần seed đầu là
+  // thứ duy nhất đăng nhập được — mất dòng log đó là mất luôn quyền vào /admin, và
+  // chạy lại seed cũng không cứu được. Không đặt biến thì giữ nguyên mật khẩu cũ,
+  // để một lần seed lại dữ liệu mẫu không vô tình đá người đang dùng ra ngoài.
+  const wantPassword = process.env.SEED_ADMIN_PASSWORD;
+  const password = wantPassword || crypto.randomUUID().slice(0, 12);
+  const hashed = bcrypt.hashSync(password, 10);
+
   await prisma.user.upsert({
     where: { email: "admin@theuni.vn" },
-    update: {},
+    update: wantPassword ? { password: hashed } : {},
     create: {
       name: "Admin",
       email: "admin@theuni.vn",
-      password: bcrypt.hashSync(password, 10),
+      password: hashed,
       role: "admin",
     },
   });
-  console.log("✓ user admin@theuni.vn");
+
+  if (wantPassword) {
+    console.log("✓ user admin@theuni.vn — đã đặt lại mật khẩu theo SEED_ADMIN_PASSWORD");
+  } else {
+    console.log(
+      `✓ user admin@theuni.vn — giữ mật khẩu hiện có.\n` +
+        `  Quên mật khẩu? Chạy: SEED_ADMIN_PASSWORD='mat-khau-moi' npm run seed\n` +
+        `  (mật khẩu dùng khi tạo mới lần đầu: ${password})`,
+    );
+  }
 
   // ==== CATEGORIES (danh mục + BST) ====
   const collections = read("collections.json");
@@ -222,8 +239,10 @@ async function main() {
     const nav = read("nav.json");
     for (let i = 0; i < nav.length; i++) {
       const item = nav[i];
+      // parentId: null ghi tường minh — Mongo phân biệt "field = null" với "field không tồn tại",
+      // bỏ trống thì bộ lọc menu cấp 1 (lib/mongo.ts NO_PARENT) không thấy bản ghi này.
       const parent = await prisma.menu.create({
-        data: { label: item.label, url: item.href || "#", position: i },
+        data: { label: item.label, url: item.href || "#", parentId: null, position: i },
       });
       for (let j = 0; j < (item.subs || []).length; j++) {
         const s = item.subs[j];
@@ -234,6 +253,38 @@ async function main() {
     }
     console.log(`✓ menus`);
   }
+
+  // ==== MỤC MENU DẪN VÀO STUDIO ====
+  // Nằm ngoài khối nav.json ở trên (khối đó chỉ chạy khi bảng menus còn rỗng): studio
+  // ra đời sau khi menu đã có dữ liệu, nên phải tự lo phần idempotent của mình.
+  // `menus` không có cột unique nào để upsert theo — khoá tự nhiên ở đây là cặp
+  // (location, url), nên tìm theo cặp đó rồi mới quyết định tạo hay cập nhật; chạy seed
+  // lại nhiều lần vẫn đúng một mục, mà nhãn/thứ tự sửa trong code vẫn được đồng bộ sang.
+  const studioMenu = await prisma.menu.findFirst({
+    where: { location: "header", url: STUDIO_PATH.PUBLIC },
+  });
+  if (studioMenu) {
+    await prisma.menu.update({
+      where: { id: studioMenu.id },
+      data: { label: STUDIO_MENU_LABEL },
+    });
+  } else {
+    // Đặt cuối hàng menu cấp 1 để không xô lệch thứ tự quản trị đã sắp. Lọc cấp 1
+    // bằng `!m.parentId` trong JS chứ không viết lại bộ lọc Mongo (lib/mongo.ts
+    // NO_PARENT là .ts, seed chạy bằng node nên không import được) — đây đúng là
+    // phép lọc mà lib/chromeHtml.ts dùng để dựng menu, nên hai bên không lệch nhau.
+    const header = await prisma.menu.findMany({ where: { location: "header" } });
+    const lastTop = header.filter((m) => !m.parentId).reduce((max, m) => Math.max(max, m.position), -1);
+    await prisma.menu.create({
+      data: {
+        label: STUDIO_MENU_LABEL,
+        url: STUDIO_PATH.PUBLIC,
+        parentId: null,
+        position: lastTop + 1,
+      },
+    });
+  }
+  console.log(`✓ menu studio (${STUDIO_PATH.PUBLIC})`);
 
   // ==== SETTINGS ====
   const settings = {

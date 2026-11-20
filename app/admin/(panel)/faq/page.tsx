@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import Icon from "@/components/admin/Icon";
 import ConfirmSubmit from "@/components/admin/ConfirmSubmit";
 import { flash } from "@/lib/flash";
+import { oid } from "@/lib/mongo";
 
 const num = (v: FormDataEntryValue | null) => (v ? Number(v) || 0 : 0);
 const str = (v: FormDataEntryValue | null) => String(v || "").trim();
@@ -11,7 +12,7 @@ export default async function FaqAdminPage() {
   async function saveFaq(fd: FormData) {
     "use server";
     await db.faq.update({
-      where: { id: num(fd.get("id")) },
+      where: { id: oid(fd.get("id")) },
       data: {
         question: str(fd.get("question")),
         answer: String(fd.get("answer") || ""),
@@ -25,7 +26,7 @@ export default async function FaqAdminPage() {
   async function addFaq(fd: FormData) {
     "use server";
     const question = str(fd.get("question"));
-    const catId = num(fd.get("faqCategoryId"));
+    const catId = oid(fd.get("faqCategoryId"));
     if (!question || !catId) return;
     const max = await db.faq.aggregate({ _max: { position: true }, where: { faqCategoryId: catId } });
     await db.faq.create({
@@ -41,7 +42,7 @@ export default async function FaqAdminPage() {
   }
   async function delFaq(fd: FormData) {
     "use server";
-    await db.faq.delete({ where: { id: num(fd.get("id")) } });
+    await db.faq.delete({ where: { id: oid(fd.get("id")) } });
     await flash("Đã xóa câu hỏi");
     revalidatePath("/admin/faq");
   }
@@ -57,7 +58,7 @@ export default async function FaqAdminPage() {
   async function saveGroup(fd: FormData) {
     "use server";
     await db.faqCategory.update({
-      where: { id: num(fd.get("id")) },
+      where: { id: oid(fd.get("id")) },
       data: { name: str(fd.get("name")), position: num(fd.get("position")) },
     });
     await flash("Đã lưu nhóm");
@@ -65,7 +66,7 @@ export default async function FaqAdminPage() {
   }
   async function delGroup(fd: FormData) {
     "use server";
-    await db.faqCategory.delete({ where: { id: num(fd.get("id")) } });
+    await db.faqCategory.delete({ where: { id: oid(fd.get("id")) } });
     await flash("Đã xóa nhóm và các câu hỏi trong đó");
     revalidatePath("/admin/faq");
   }
@@ -90,9 +91,9 @@ export default async function FaqAdminPage() {
       {groups.map((g) => (
         <div className="panel panel-plain" key={g.id}>
           <div className="panel-head">
-            <form action={saveGroup} style={{ display: "flex", gap: 8, alignItems: "center", flex: 1 }}>
+            <form action={saveGroup} className="inline-form is-grow">
               <input type="hidden" name="id" value={g.id} />
-              <input name="name" defaultValue={g.name} style={{ fontWeight: 600, maxWidth: 280 }} />
+              <input name="name" defaultValue={g.name} className="is-name" />
               <input name="position" type="number" defaultValue={g.position} className="num-input" title="Thứ tự nhóm" />
               <button className="icon-btn icon-btn-save" title="Lưu tên nhóm" type="submit"><Icon name="check" size={15} /></button>
             </form>
@@ -154,8 +155,8 @@ export default async function FaqAdminPage() {
 
       <div className="panel" style={{ padding: 18 }}>
         <h3 className="panel-mini-title">Thêm nhóm câu hỏi mới</h3>
-        <form action={addGroup} style={{ display: "flex", gap: 8 }}>
-          <input name="name" placeholder="Tên nhóm (VD: VẬN CHUYỂN)" style={{ maxWidth: 320 }} />
+        <form action={addGroup} className="inline-form">
+          <input name="name" placeholder="Tên nhóm (VD: VẬN CHUYỂN)" className="is-wide" />
           <button className="btn" type="submit"><Icon name="plus" size={14} /> Thêm nhóm</button>
         </form>
       </div>

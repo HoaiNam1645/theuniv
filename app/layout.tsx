@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "THE UNI",
-  description:
-    "Công ty TNHH Đồng Phục THE UNI là thương hiệu sản xuất đồng phục chất lượng, thiết kế trẻ trung, được nhiều học sinh, đội nhóm, doanh nghiệp yêu thích và tin dùng.",
+  // `metadataBase` là điều kiện để Next dựng canonical và ảnh OpenGraph thành URL
+  // TUYỆT ĐỐI. Thiếu nó thì og:image ra đường dẫn tương đối và Facebook/Zalo
+  // không lấy được ảnh khi dán link.
+  metadataBase: new URL(SITE_URL),
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
   icons: { icon: "/theme/favicon.png" },
 };
 

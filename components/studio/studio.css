@@ -1,0 +1,251 @@
+/*
+ * Tailwind cho design studio — CÓ CHỦ Ý KHÔNG NẠP PREFLIGHT.
+ *
+ * theuniv dùng CSS thuần của theme Sapo link thẳng trong <head> (và
+ * public/css/admin.css cho admin). Preflight là một reset toàn cục — nó gỡ
+ * margin, bỏ list-style, đặt lại border và ép `img { display: block }` — nên
+ * bật lên là đè thẳng lên theme và vỡ cả site.
+ *
+ * `@import "tailwindcss"` kéo cả preflight (index.css của tailwindcss 4.3.3 =
+ * @layer theme + @layer base(preflight) + @layer utilities). Ở đây nhập có
+ * chọn lọc đúng hai entry package export ra, bỏ hẳn preflight.css.
+ *
+ * Lớp bảo hiểm thứ hai: mọi thứ Tailwind sinh ra đều nằm trong cascade layer,
+ * mà CSS có layer luôn xếp DƯỚI CSS không layer. Theme Sapo không dùng layer,
+ * nên kể cả khi file này còn dính lại sau khi điều hướng khỏi studio (Next
+ * không gỡ stylesheet giữa các route), nó vẫn không thắng được theme.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/*
+ * Quét đúng nơi có class của studio. Không để auto-detect chạy tự do vì nó đọc
+ * cả data/*.json — nguyên trang HTML của theme — và sinh ra utility trùng tên
+ * class bootstrap (`container`, `hidden`, `fixed`…) chỉ để nằm chết trong bundle.
+ */
+@source "../../components/studio";
+@source "../../lib/studio";
+@source "../../app";
+
+/*
+ * Bảng màu studio.
+ *
+ * Studio chạy ở hai nơi có tông ngược nhau: trang khách nằm trên theme tối của
+ * THE UNI, còn trang quản trị là nền trắng của `public/css/admin.css`. Nhúng
+ * nguyên bản tối vào admin thì nó chọi hẳn với phần còn lại của trang.
+ *
+ * Nên màu tách thành biến, và `studioTheme.ts` chỉ còn tham chiếu biến — thêm
+ * một tông nữa sau này là thêm một khối ở đây, không phải sửa 30 chuỗi class.
+ * Bản sáng lấy ĐÚNG giá trị của `admin.css` (--surface/--border/--ink/--blue…)
+ * chứ không phỏng theo, để studio và trang quản trị là một khối liền.
+ *
+ * Độ trong suốt nướng thẳng vào giá trị biến: Tailwind không áp được cú pháp
+ * `/95` lên một màu nằm trong `var()`.
+ */
+[data-studio] {
+  --studio-bg: #0b1020;
+  --studio-surface: #0e1428;
+  --studio-raised: #141b33;
+  --studio-panel: rgb(19 26 51 / 0.95);
+  --studio-pill: rgb(20 27 51 / 0.95);
+  --studio-pill-hover: #1b2444;
+  --studio-card: rgb(255 255 255 / 0.03);
+  --studio-row: rgb(255 255 255 / 0.04);
+  --studio-row-hover: rgb(255 255 255 / 0.08);
+  --studio-hover: rgb(255 255 255 / 0.08);
+  --studio-border: rgb(255 255 255 / 0.08);
+  --studio-border-strong: rgb(255 255 255 / 0.1);
+  --studio-grip: rgb(255 255 255 / 0.2);
+  --studio-dot: rgb(255 255 255 / 0.07);
+  /* Thanh MÀU / MẶT IN dưới đáy panel — tối hơn panel một bậc để tách khối. */
+  --studio-bar: rgb(11 16 32 / 0.6);
+  --studio-ink: #f1f5f9;
+  --studio-ink-2: #e2e8f0;
+  --studio-muted: #94a3b8;
+  --studio-accent: #818cf8;
+  --studio-accent-line: rgb(129 140 248 / 0.7);
+  --studio-accent-soft: rgb(99 102 241 / 0.15);
+  --studio-accent-soft-2: rgb(99 102 241 / 0.2);
+  --studio-accent-ink: #a5b4fc;
+  --studio-accent-ink-strong: #ffffff;
+  --studio-accent-hover: #a5b4fc;
+  --studio-danger: #fda4af;
+  --studio-danger-soft: rgb(244 63 94 / 0.2);
+  --studio-danger-line: rgb(251 113 133 / 0.4);
+  --studio-warn: #fcd34d;
+  --studio-ok: #6ee7b7;
+  --studio-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+  --studio-shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+}
+
+/* Tông sáng — dùng cho studio nhúng trong trang quản trị. */
+[data-studio='light'] {
+  --studio-bg: #f7f7f8;
+  --studio-surface: #ffffff;
+  --studio-raised: #ffffff;
+  --studio-panel: rgb(255 255 255 / 0.97);
+  --studio-pill: rgb(255 255 255 / 0.95);
+  --studio-pill-hover: #f2f2f4;
+  --studio-card: #fafafb;
+  --studio-row: #fafafb;
+  --studio-row-hover: #f2f2f4;
+  --studio-hover: #f2f2f4;
+  --studio-border: #e7e7ea;
+  --studio-border-strong: #d9d9de;
+  --studio-grip: #d9d9de;
+  --studio-dot: rgb(24 24 27 / 0.08);
+  --studio-bar: #fafafb;
+  --studio-ink: #18181b;
+  --studio-ink-2: #52525b;
+  /*
+   * Đậm hơn `--muted` (#9b9ba3) của admin.css một bậc, có lý do đo được: admin
+   * dùng màu đó cho chữ cỡ thường, còn studio dùng cho nhãn rail 9px và dòng
+   * "N hình" 10px — ở cỡ đó #9b9ba3 chỉ đạt 2,76:1 trên nền trắng, dưới ngưỡng
+   * đọc được. Màu này cho ~5:1 mà vẫn cùng họ xám trung tính.
+   */
+  --studio-muted: #6e6e77;
+  --studio-accent: #2a78d6;
+  --studio-accent-line: rgb(42 120 214 / 0.55);
+  --studio-accent-soft: rgb(42 120 214 / 0.1);
+  --studio-accent-soft-2: rgb(42 120 214 / 0.16);
+  --studio-accent-ink: #1f5ea8;
+  --studio-accent-ink-strong: #14477f;
+  --studio-accent-hover: #1f5ea8;
+  /* Trạng thái phải đậm hơn hẳn bản tối: chữ pastel trên nền trắng là không đọc được.
+     Lấy đúng --st-* của admin.css để hai nơi báo lỗi cùng một màu. */
+  --studio-danger: #c0344a;
+  --studio-danger-soft: rgb(192 52 74 / 0.1);
+  --studio-danger-line: rgb(192 52 74 / 0.35);
+  --studio-warn: #b97800;
+  --studio-ok: #008300;
+  --studio-shadow: 0 1px 2px rgb(16 16 20 / 0.04);
+  --studio-shadow-lg: 0 8px 24px rgb(16 16 20 / 0.12);
+}
+
+/*
+ * Reset KHOANH VÙNG — preflight của Tailwind, nhưng chỉ bên trong `[data-studio]`.
+ *
+ * Studio được viết dựa trên giả định có preflight (nút không nền, link không
+ * gạch chân, font sans, `border-style: solid` để `border-*` ăn). Tắt preflight
+ * toàn cục xong thì ba lỗi lộ ra ngay trên ảnh chụp: chữ về serif, "THE UNI" bị
+ * gạch chân, và các nút icon ở thanh trên hiện khung xám mặc định của trình duyệt.
+ *
+ * Đặt trong `@layer base` là điều kiện sống còn: base xếp DƯỚI utilities trong
+ * thứ tự layer khai báo ở trên, nên `bg-indigo-500` vẫn thắng
+ * `background-color: transparent` ở đây — dù selector `[data-studio] button`
+ * có specificity cao hơn class đơn. Không có layer thì reset sẽ nuốt sạch màu nền.
+ *
+ * Toàn bộ vẫn nằm trong layer nên không đụng được vào theme (CSS không layer),
+ * và còn bị khoá thêm bởi `[data-studio]` nên không rò ra ngoài studio.
+ */
+@layer base {
+  [data-studio],
+  [data-studio] *,
+  [data-studio] *::before,
+  [data-studio] *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    /* `0 solid` để utility `border-*` chỉ cần đặt màu/độ dày là hiện ra. */
+    border: 0 solid;
+  }
+
+  [data-studio] {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-family: var(--default-font-family, ui-sans-serif, system-ui, sans-serif);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  [data-studio] h1,
+  [data-studio] h2,
+  [data-studio] h3,
+  [data-studio] h4,
+  [data-studio] h5,
+  [data-studio] h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  [data-studio] a {
+    color: inherit;
+    -webkit-text-decoration: inherit;
+    text-decoration: inherit;
+  }
+
+  [data-studio] b,
+  [data-studio] strong {
+    font-weight: bolder;
+  }
+
+  [data-studio] ol,
+  [data-studio] ul,
+  [data-studio] menu {
+    list-style: none;
+  }
+
+  /* Replaced element: `display: block` là thứ layout của studio dựa vào —
+     `<canvas>` của Fabric và ảnh trong lưới kho design đều tính theo nó. */
+  [data-studio] img,
+  [data-studio] svg,
+  [data-studio] video,
+  [data-studio] canvas,
+  [data-studio] audio,
+  [data-studio] iframe,
+  [data-studio] embed,
+  [data-studio] object {
+    display: block;
+    vertical-align: middle;
+  }
+
+  [data-studio] img,
+  [data-studio] video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  [data-studio] button,
+  [data-studio] input,
+  [data-studio] select,
+  [data-studio] optgroup,
+  [data-studio] textarea,
+  [data-studio] ::file-selector-button {
+    font: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    border-radius: 0;
+    background-color: transparent;
+    opacity: 1;
+  }
+
+  [data-studio] :where(select:is([multiple], [size])) optgroup {
+    font-weight: bolder;
+  }
+
+  [data-studio] ::placeholder {
+    opacity: 1;
+    color: color-mix(in oklab, currentcolor 50%, transparent);
+  }
+
+  [data-studio] textarea {
+    resize: vertical;
+  }
+
+  [data-studio] button,
+  [data-studio] input:where([type='button'], [type='reset'], [type='submit']),
+  [data-studio] ::file-selector-button {
+    appearance: button;
+  }
+
+  [data-studio] :-moz-focusring {
+    outline: auto;
+  }
+
+  [data-studio] [hidden]:where(:not([hidden='until-found'])) {
+    display: none !important;
+  }
+}

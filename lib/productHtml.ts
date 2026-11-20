@@ -1,7 +1,8 @@
 // Trang chi tiết sản phẩm — dựng đúng cấu trúc theme gốc:
-// cột trái: bộ điều khiển thumbnail cố định + dãy ảnh lớn (desktop) + gallery swiper (mobile)
+// cột trái: cột thumbnail dính + dãy ảnh lớn (≥768px) + gallery swiper (<768px)
 // cột phải: panel sticky (tên, thông số, nút NHẬN TƯ VẤN cuộn xuống form trong trang)
 // dưới: slider "THIẾT KẾ TƯƠNG TỰ" + form tư vấn đầy đủ.
+// Bố cục (vị trí dính, mốc ảnh, vùng chạm) ở public/css/page-product.css — markup không mang style vị trí.
 
 const esc = (s: string | null | undefined) =>
   (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -86,23 +87,24 @@ export function buildProductDetailHtml(p: DetailProduct, related: RelatedProduct
     )
     .join("\n");
 
-  // A2. ảnh chính desktop (2 ảnh đầu có hover-zoom lightbox anchor)
+  // A2. ảnh chính desktop (2 ảnh đầu có lớp phóng to khi rê chuột — ThemeJS; không phải link,
+  // chạm vào không được mở file ảnh rời khỏi trang)
   const mainImgs = imgs
     .map(
       (im, i) => `							<div class="img_producto_container item" data-scale="1.6" id="scrollIntoView${i + 1}">
 								<img height="1000" width="1000" src="${esc(im.url)}" alt="${name}" data-image="${esc(im.url)}" class="img-responsive mx-auto d-block swiper-lazy" />
-${i < 2 ? `								<a class="dslc-lightbox-image img_producto" href="${esc(im.url)}" target="_self" style="background-image:url('${esc(im.url)}')"></a>` : ""}
+${i < 2 ? `								<div class="img_producto" style="background-image:url('${esc(im.url)}')"></div>` : ""}
 							</div>
 							<div class="wrap mb-0"></div>`
     )
     .join("\n");
 
-  // B. gallery mobile (swiper top + thumbs)
+  // B. gallery mobile (swiper top + thumbs); slide không phải link — chạm để vuốt, không mở file ảnh
   const gTop = imgs
     .map(
-      (im, i) => `								<a class="swiper-slide" data-hash="${i}" href="${esc(im.url)}" title="Click để xem">
+      (im, i) => `								<div class="swiper-slide" data-hash="${i}">
 									<img height="1000" width="1000" src="${esc(im.url)}" alt="${name}" data-image="${esc(im.url)}" class="img-responsive mx-auto d-block swiper-lazy" />
-								</a>`
+								</div>`
     )
     .join("\n");
   const gThumbs = imgs
@@ -115,8 +117,9 @@ ${i < 2 ? `								<a class="dslc-lightbox-image img_producto" href="${esc(im.ur
     )
     .join("\n");
 
+  // Nhãn để chữ trần như giá trị — bọc <p> sẽ nhận margin của .rte p, hai cột lệch dòng.
   const specRows = p.specs
-    .map(([k, v]) => `										<tr><td><p>${esc(k)}:</p></td><td>${esc(v)}</td></tr>`)
+    .map(([k, v]) => `										<tr><td>${esc(k)}:</td><td>${esc(v)}</td></tr>`)
     .join("\n");
 
   const relatedBlock = related.length
@@ -149,12 +152,11 @@ ${related.map(buildRelatedSlide).join("\n")}
 				<div class="details-product">
 					<div class="row">
 						<div class="product-detail-left product-images col-12 col-md-8 col-lg-8">
-							<div class="fixed-sm id_conten_design-right" id="myHeader" style="position: fixed; top: 122px;">
+							<div class="fixed-sm id_conten_design-right" id="myHeader">
 								<div class="">
 ${thumbs}
 								</div>
 							</div>
-							<div class="margin-left-sm-123"></div>
 							<div class="margin-left-sm-123">
 								<div class="product-image">
 ${mainImgs}
@@ -178,7 +180,7 @@ ${gThumbs}
 							</div>
 						</div>
 						<div class="col-12 col-md-4 col-lg-4">
-							<div class="details-pro" style="position: sticky; top: 115px;">
+							<div class="details-pro">
 								<h1 class="title-product">${name}</h1>
 								<p class="line-bottom-title-mb" style="width: 60%"></p>
 								<div class="inventory_quantity d-none">
@@ -192,7 +194,7 @@ ${gThumbs}
 									</div>
 									<div class="product-summary">
 										<div class="rte">
-											<table><tbody>
+											<table class="uni-pdp-specs"><tbody>
 ${specRows}
 											</tbody></table>
 											${p.descriptionHtml}

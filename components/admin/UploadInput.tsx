@@ -1,8 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
+import ImageDrop from "./ImageDrop";
 
-/** Ô nhập URL ảnh kèm nút upload — chọn file là tự đẩy lên server và điền URL. */
+/**
+ * Ô nhập URL ảnh + vùng kéo thả + xem trước.
+ *
+ * Giữ nguyên props cũ (`name`, `defaultValue`, `formId`…) để mọi nơi đang gọi
+ * không phải sửa gì; phần tải ảnh lên đã chuyển hết sang `ImageDrop` — trước đây
+ * file này tự gọi `/api/admin/upload`, là một trong bốn bản chép cùng một logic.
+ */
 export default function UploadInput({
   name,
   defaultValue = "",
@@ -17,30 +24,17 @@ export default function UploadInput({
   className?: string;
 }) {
   const [value, setValue] = useState(defaultValue);
-  const [busy, setBusy] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setBusy(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const d = await res.json();
-      if (d.ok) setValue(d.url);
-      else alert(d.error || "Upload thất bại");
-    } catch {
-      alert("Không upload được, thử lại nhé");
-    } finally {
-      setBusy(false);
-    }
-  }
+  // Ảnh không tải được thì ẨN hẳn ô xem trước thay vì để icon vỡ: URL trỏ tới
+  // file chỉ có trên máy chủ (máy dev dùng chung DB nhưng khác đĩa) là chuyện
+  // bình thường, và một icon vỡ trông như dữ liệu hỏng.
+  //
+  // Lưu chính URL đã hỏng chứ không phải cờ boolean: nhờ vậy đổi sang URL khác là
+  // tự thử lại, khỏi cần `useEffect` reset cờ (React 19 cấm setState đồng bộ trong
+  // effect, và ở đây đúng là không cần effect).
+  const [brokenSrc, setBrokenSrc] = useState<string | null>(null);
 
   return (
-    <span className="upl">
+    <div className="upl-field">
       <input
         name={name}
         form={formId}
@@ -49,24 +43,16 @@ export default function UploadInput({
         placeholder={placeholder}
         className={className}
       />
-      <button
-        type="button"
-        className="upl-btn"
-        title="Upload ảnh từ máy"
-        disabled={busy}
-        onClick={() => fileRef.current?.click()}
-      >
-        {busy ? (
-          <span className="upl-spin" />
-        ) : (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <path d="m17 8-5-5-5 5" />
-            <path d="M12 3v12" />
-          </svg>
-        )}
-      </button>
-      <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={onPick} />
-    </span>
+      <ImageDrop compact onUploaded={(urls) => setValue(urls[0] ?? value)}>
+        {value && brokenSrc !== value ? (
+          <img
+            className="upl-thumb"
+            src={value}
+            alt=""
+            onError={() => setBrokenSrc(value)}
+          />
+        ) : null}
+      </ImageDrop>
+    </div>
   );
 }

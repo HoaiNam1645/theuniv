@@ -4,6 +4,7 @@ import Icon from "@/components/admin/Icon";
 import UploadInput from "@/components/admin/UploadInput";
 import ConfirmSubmit from "@/components/admin/ConfirmSubmit";
 import { flash } from "@/lib/flash";
+import { NO_PARENT, oid } from "@/lib/mongo";
 
 // Header hiển thị trên mọi trang -> làm mới toàn bộ layout website
 function refreshSite() {
@@ -38,7 +39,7 @@ export default async function HeaderMenuPage() {
   async function saveMenu(fd: FormData) {
     "use server";
     await db.menu.update({
-      where: { id: num(fd.get("id")) },
+      where: { id: oid(fd.get("id")) },
       data: {
         label: str(fd.get("label")),
         url: str(fd.get("url")),
@@ -54,10 +55,10 @@ export default async function HeaderMenuPage() {
     const label = str(fd.get("label"));
     const url = str(fd.get("url"));
     if (!label || !url) return;
-    const parentId = fd.get("parentId") ? num(fd.get("parentId")) : null;
+    const parentId = oid(fd.get("parentId")) || null;
     const max = await db.menu.aggregate({
       _max: { position: true },
-      where: { location: "header", parentId },
+      where: { location: "header", ...(parentId ? { parentId } : NO_PARENT) },
     });
     await db.menu.create({
       data: { label, url, parentId, location: "header", position: (max._max.position ?? 0) + 1 },
@@ -67,7 +68,11 @@ export default async function HeaderMenuPage() {
   }
   async function delMenu(fd: FormData) {
     "use server";
-    await db.menu.delete({ where: { id: num(fd.get("id")) } }); // con bị xóa theo (cascade)
+    const id = oid(fd.get("id"));
+    // Mongo không cascade được trên self-relation (xem schema.prisma) -> xoá mục con thủ công,
+    // nếu bỏ sót thì menu con thành mồ côi và biến mất khỏi header mà vẫn nằm trong DB.
+    await db.menu.deleteMany({ where: { parentId: id } });
+    await db.menu.delete({ where: { id } });
     await flash("Đã xóa mục menu");
     refreshSite();
   }

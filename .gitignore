@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# .env.example chỉ liệt kê TÊN biến (không có giá trị thật) -> commit để người sau biết cần gì
+!.env.example
 
 # vercel
 .vercel
@@ -45,3 +47,9 @@ next-env.d.ts
 .claude/settings.local.json
 .claude/launch.json
 .deploy.env
+
+# Ảnh marketing trong public/theme được commit để bản clone/deploy tự chứa
+# đầy đủ asset, không phụ thuộc CDN gốc.
+
+# Bản sao lưu dữ liệu — chứa nội dung thật, không đưa lên git.
+backups/

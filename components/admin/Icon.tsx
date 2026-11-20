@@ -1,5 +1,20 @@
 // Bộ icon stroke tối giản (24x24, stroke 1.75) — thay cho emoji
 const PATHS: Record<string, React.ReactNode> = {
+  "chevron-up": <path d="m6 15 6-6 6 6" />,
+  "chevron-down": <path d="m6 9 6 6 6-6" />,
+  eye: (
+    <>
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  "eye-off": (
+    <>
+      <path d="M10.6 6.2A9.9 9.9 0 0 1 12 6c6.4 0 10 7 10 7a17 17 0 0 1-2.9 3.7" />
+      <path d="M6.6 6.6A17 17 0 0 0 2 13s3.6 7 10 7a9.6 9.6 0 0 0 4.6-1.1" />
+      <path d="m2 2 20 20" />
+    </>
+  ),
   dashboard: (
     <>
       <rect x="3" y="3" width="7.5" height="7.5" rx="1.8" />
@@ -80,6 +95,7 @@ const PATHS: Record<string, React.ReactNode> = {
     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
   ),
   check: <path d="M20 6 9 17l-5-5" />,
+  close: <path d="M18 6 6 18M6 6l12 12" />,
   chevronDown: <path d="m6 9 6 6 6-6" />,
   arrowRight: <path d="M5 12h14M13 6l6 6-6 6" />,
   help: (
@@ -100,6 +116,24 @@ const PATHS: Record<string, React.ReactNode> = {
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="4" />
       <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </>
+  ),
+  // Bảng màu — studio thiết kế
+  palette: (
+    <>
+      <path d="M12 3a9 9 0 1 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1-.24-.27-.39-.62-.39-1 0-.83.67-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.42-4.03-8-9-8z" />
+      <circle cx="7.5" cy="11.5" r="1" />
+      <circle cx="10.5" cy="7.5" r="1" />
+      <circle cx="15.5" cy="8.5" r="1" />
+    </>
+  ),
+  // Chồng ảnh — kho mockup & mẫu thiết kế
+  images: (
+    <>
+      <rect x="8" y="3" width="13" height="13" rx="2" />
+      <path d="m11 12 2.2-2.6a1 1 0 0 1 1.5 0L18 13" />
+      <circle cx="12.2" cy="7.2" r="1.1" />
+      <path d="M16 19.5a1.5 1.5 0 0 1-1.5 1.5H5a2 2 0 0 1-2-2V8.5" />
     </>
   ),
 };

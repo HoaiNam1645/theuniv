@@ -6,24 +6,6 @@
   --textColor: #231f20;
 }
 
-/* Chữ THE UNI cạnh logo luôn 1 dòng như bản gốc */
-#logo a .text-white,
-#logo_mob a .text-white {
-  white-space: nowrap;
-}
-
-/* Mobile: mở menu con khi bấm mũi tên */
-@media (max-width: 991px) {
-  .header-nav .item_big > li.nav-item.open-sub > ul.item_small {
-    max-height: 1000px !important;
-    max-width: 100% !important;
-    opacity: 1 !important;
-    position: static !important;
-    overflow: visible !important;
-    transform: none !important;
-  }
-}
-
 /* Sidebar lọc mobile: mở bằng nút "Bộ lọc" */
 .dqdt-sidebar.open-mb {
   visibility: visible !important;
@@ -43,4 +25,29 @@
 /* Ảnh sản phẩm trang chi tiết xếp dọc */
 .product-detail-left img {
   max-width: 100%;
+}
+
+/* ============================================================
+   ĐIỆN THOẠI  (≤640px) — site khách
+   ============================================================
+   Đo bằng scripts/audit-mobile.mjs. Bố cục của theme vốn đã co giãn tốt: không
+   trang nào của site rộng hơn màn hình. Còn lại là ba thứ cản tay người dùng
+   thật, không phải chuyện thẩm mỹ. */
+@media (max-width: 640px) {
+  /* 1. Ô tìm kiếm 14px: dưới 16px thì iOS TỰ PHÓNG TO trang khi bấm vào ô, và
+        không tự thu lại — người dùng bị kẹt ở trạng thái phóng to sau mỗi lần
+        tìm kiếm. 16px là ngưỡng duy nhất chặn được hành vi này. */
+  .search-auto.form-control { font-size: 16px; }
+
+  /* 2. Thanh chuyên mục của blog: chữ 18px mà ô chạm chỉ cao 22px, hai mục sát
+        nhau nên bấm nhầm là chuyện thường. Nới bằng padding dọc, không đổi cỡ
+        chữ nên hàng vẫn xuống dòng y như cũ. */
+  .nav-item > .a-img { display: inline-block; padding: 11px 0; }
+
+  /* 3. Nút gửi liên hệ — CTA chính của trang, đang cao 40px. */
+  .btn-lienhe { min-height: 44px; }
+
+  /* 4. Nút chuyển trang 27×27 quá nhỏ để bấm chính xác. */
+  .page-link { min-width: 40px; min-height: 40px; display: inline-flex;
+               align-items: center; justify-content: center; }
 }

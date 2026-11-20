@@ -41,7 +41,6 @@ export default function LeadsChart({ data }: { data: Point[] }) {
 
         {data.map((d, i) => {
           const cx = PAD_L + i * step + step / 2;
-          const bh = Math.max(d.value > 0 ? 3 : 0, (d.value / max) * plotH);
           return (
             <g key={i}>
               {/* cột dữ liệu: bo đầu trên, neo baseline */}

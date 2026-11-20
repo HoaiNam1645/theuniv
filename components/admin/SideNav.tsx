@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { STUDIO_PATH } from "@/lib/studio/constants";
 import Icon from "./Icon";
+
+/** Nhãn của hai mục studio — nav và crumb phải gọi cùng một tên. */
+const STUDIO_NAV_LABEL = {
+  STUDIO: "Studio thiết kế",
+  LIBRARY: "Kho mockup & mẫu",
+} as const;
 
 type NavItem = {
   href?: string;
@@ -39,6 +46,13 @@ const SECTIONS: { label: string; items: NavItem[] }[] = [
       { href: "/admin/articles", icon: "news", text: "Bài viết" },
       { href: "/admin/faq", icon: "help", text: "Câu hỏi (FAQ)" },
       { href: "/admin/pages", icon: "file", text: "Trang tĩnh" },
+    ],
+  },
+  {
+    label: "Thiết kế",
+    items: [
+      { href: STUDIO_PATH.ADMIN, icon: "palette", text: STUDIO_NAV_LABEL.STUDIO },
+      { href: STUDIO_PATH.ADMIN_LIBRARY, icon: "images", text: STUDIO_NAV_LABEL.LIBRARY },
     ],
   },
   {
@@ -144,6 +158,8 @@ const CRUMBS: [string, string][] = [
   ["/admin/appearance/header", "Giao diện · Header & menu"],
   ["/admin/appearance/footer", "Giao diện · Footer"],
   ["/admin/appearance/floating", "Giao diện · Nút liên hệ nổi"],
+  [STUDIO_PATH.ADMIN, STUDIO_NAV_LABEL.STUDIO],
+  [STUDIO_PATH.ADMIN_LIBRARY, STUDIO_NAV_LABEL.LIBRARY],
   ["/admin/settings", "Cài đặt"],
   ["/admin/appearance", "Giao diện"],
   ["/admin", "Bảng điều khiển"],

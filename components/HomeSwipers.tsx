@@ -1,10 +1,14 @@
 "use client";
 
 import Script from "next/script";
+import { HOME_SLIDER_CLASS, SLIDE_MOBILE_MEDIA } from "@/lib/siteDom";
 
 declare global {
   interface Window {
-    Swiper?: new (selector: string, options: object) => { destroy?: () => void };
+    Swiper?: new (
+      selector: string,
+      options: object,
+    ) => { destroy?: () => void; autoplay: { start: () => boolean; stop: () => boolean } };
   }
 }
 
@@ -13,64 +17,48 @@ function initSliders() {
   const Swiper = window.Swiper;
   if (!Swiper) return;
 
-  if (document.querySelector(".home-slider"))
-    new Swiper(".home-slider", {
+  const homeSlider = `.${HOME_SLIDER_CLASS}`;
+  const heroEl = document.querySelector(homeSlider);
+  if (heroEl) {
+    const hero = new Swiper(homeSlider, {
       autoplay: { delay: 6000 },
       loop: true,
-      pagination: { el: ".home-slider .swiper-pagination", clickable: true },
+      /**
+       * Chiều cao chạy theo ĐÚNG slide đang hiện, thay vì lấy chiều cao của
+       * slide cao nhất cho tất cả.
+       *
+       * Trên điện thoại các slide không cùng dạng ảnh: 6 slide có ảnh mobile
+       * dọc (tỷ lệ 0.55, cao 782px) còn 3 slide rơi về ảnh ngang của desktop
+       * (tỷ lệ 2.32, cao 185px). Không có tuỳ chọn này thì cả ba slide ngang
+       * ngồi trong cái khung 782px và để lại **597px nền đen**.
+       *
+       * Trên desktop mọi slide đều tỷ lệ 2.31 nên tuỳ chọn này không đổi gì
+       * (chênh lệch đo được giữa các slide là 1–3px).
+       */
+      autoHeight: true,
+      pagination: { el: `${homeSlider} .swiper-pagination`, clickable: true },
       navigation: {
-        nextEl: ".home-slider .swiper-button-next",
-        prevEl: ".home-slider .swiper-button-prev",
+        nextEl: `${homeSlider} .swiper-button-next`,
+        prevEl: `${homeSlider} .swiper-button-prev`,
       },
     });
 
-  if (document.querySelector(".danhmuc-slider"))
-    new Swiper(".danhmuc-slider", {
-      slidesPerView: 3,
-      loop: true,
-      grabCursor: true,
-      roundLengths: true,
-      slideToClickedSlide: false,
-      spaceBetween: 50,
-      autoplay: { delay: 6000 },
-      navigation: {
-        nextEl: ".section_danhmuc .swiper-button-next",
-        prevEl: ".section_danhmuc .swiper-button-prev",
-      },
-      breakpoints: {
-        300: { slidesPerView: 2, spaceBetween: 20 },
-        500: { slidesPerView: 2, spaceBetween: 20 },
-        640: { slidesPerView: 2, spaceBetween: 20 },
-        768: { slidesPerView: 4, spaceBetween: 20 },
-        991: { slidesPerView: 4, spaceBetween: 50 },
-        1200: { slidesPerView: 4, spaceBetween: 50 },
-      },
-    });
+    // Ở khổ ảnh mobile, khung đổi cao ~500px giữa slide dọc và slide ngang: tự chuyển slide là kéo cả
+    // trang theo khi không ai chạm. Chỉ đổi slide khi người dùng vuốt/bấm; xoay màn qua mốc thì đổi theo.
+    const mobileArt = window.matchMedia(SLIDE_MOBILE_MEDIA);
+    const syncAutoplay = () => {
+      if (!heroEl.isConnected) {
+        mobileArt.removeEventListener("change", syncAutoplay);
+        return;
+      }
+      if (mobileArt.matches) hero.autoplay.stop();
+      else hero.autoplay.start();
+    };
+    syncAutoplay();
+    mobileArt.addEventListener("change", syncAutoplay);
+  }
 
-  if (document.querySelector(".brand-swiper"))
-    new Swiper(".brand-swiper", {
-      slidesPerView: 7,
-      loop: true,
-      grabCursor: true,
-      spaceBetween: 30,
-      roundLengths: true,
-      slideToClickedSlide: false,
-      autoplay: { delay: 4000 },
-      navigation: {
-        nextEl: ".section_brand .swiper-button-next",
-        prevEl: ".section_brand .swiper-button-prev",
-      },
-      breakpoints: {
-        300: { slidesPerView: 3, spaceBetween: 10 },
-        500: { slidesPerView: 3, spaceBetween: 10 },
-        640: { slidesPerView: 4, spaceBetween: 10 },
-        768: { slidesPerView: 5, spaceBetween: 30 },
-        991: { slidesPerView: 6, spaceBetween: 30 },
-        1200: { slidesPerView: 7, spaceBetween: 30 },
-      },
-    });
-
-  // Trang bài viết: slider "Nội dung liên quan" 4 cột (khác config trang chủ)
+  // Trang bài viết: slider "Nội dung liên quan" 4 cột
   if (document.querySelector(".blog_lienquan .section-feedback"))
     new Swiper(".section-feedback", {
       slidesPerView: 4,
@@ -91,28 +79,6 @@ function initSliders() {
         768: { slidesPerView: 2, spaceBetween: 30 },
         991: { slidesPerView: 3, spaceBetween: 30 },
         1200: { slidesPerView: 4, spaceBetween: 30 },
-      },
-    });
-  else if (document.querySelector(".section-feedback"))
-    new Swiper(".section-feedback", {
-      slidesPerView: 3,
-      loop: true,
-      grabCursor: true,
-      spaceBetween: 30,
-      roundLengths: true,
-      slideToClickedSlide: false,
-      autoplay: { delay: 6000 },
-      navigation: {
-        nextEl: ".block-feedback .swiper-button-next",
-        prevEl: ".block-feedback .swiper-button-prev",
-      },
-      breakpoints: {
-        300: { slidesPerView: 1, spaceBetween: 30 },
-        500: { slidesPerView: 1, spaceBetween: 30 },
-        640: { slidesPerView: 2, spaceBetween: 30 },
-        768: { slidesPerView: 2, spaceBetween: 30 },
-        991: { slidesPerView: 2, spaceBetween: 30 },
-        1200: { slidesPerView: 3, spaceBetween: 30 },
       },
     });
 
@@ -168,29 +134,6 @@ function initSliders() {
         1200: { slidesPerView: 4, spaceBetween: 30 },
       },
     });
-
-  if (document.querySelector(".blog-swiper"))
-    new Swiper(".blog-swiper", {
-      slidesPerView: 3,
-      loop: true,
-      grabCursor: true,
-      spaceBetween: 30,
-      roundLengths: true,
-      slideToClickedSlide: false,
-      autoplay: { delay: 6000 },
-      navigation: {
-        nextEl: ".section_blog .swiper-button-next",
-        prevEl: ".section_blog .swiper-button-prev",
-      },
-      breakpoints: {
-        300: { slidesPerView: 2, spaceBetween: 10 },
-        500: { slidesPerView: 2, spaceBetween: 10 },
-        640: { slidesPerView: 1, spaceBetween: 10 },
-        768: { slidesPerView: 2, spaceBetween: 30 },
-        991: { slidesPerView: 3, spaceBetween: 30 },
-        1200: { slidesPerView: 4, spaceBetween: 30 },
-      },
-    });
 }
 
 export default function HomeSwipers() {
@@ -198,7 +141,7 @@ export default function HomeSwipers() {
     <Script
       src="/theme/swiper.js"
       strategy="afterInteractive"
-      onLoad={initSliders}
+      // onReady chạy cả lần tải đầu lẫn mỗi lần mount lại; thêm onLoad là khởi tạo swiper hai lần.
       onReady={initSliders}
     />
   );

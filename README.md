@@ -6,10 +6,47 @@ Website clone giao diện [THEUNI.clothing](https://THEUNI.clothing) (Sapo theme
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+cp .env.example .env          # rồi điền DATABASE_URL (MongoDB Atlas) + AUTH_SECRET
+npm run db:push               # đồng bộ schema + index lên Atlas
+npm run seed                  # dữ liệu mẫu (SEED_ADMIN_PASSWORD=... để đặt mật khẩu admin)
+npm run dev                   # http://localhost:4392
 # hoặc production:
 npm run build && npm run start
 ```
+
+## Database — MongoDB Atlas qua Prisma
+
+Dùng **`prisma db push`**, KHÔNG dùng `prisma migrate`: connector MongoDB không có migration
+(Mongo không có schema nội bộ), `db push` chỉ đồng bộ index/unique. Không có thư mục
+`prisma/migrations` và cũng không nên tạo.
+
+| Lệnh | Việc |
+|---|---|
+| `npm run db:push` | Đẩy `prisma/schema.prisma` lên Atlas (tạo/xoá index & unique) |
+| `npm run db:generate` | Sinh lại Prisma Client sau khi sửa schema |
+| `npm run seed` | Nạp dữ liệu mẫu — idempotent, upsert theo `slug`/`key` |
+
+Quên mật khẩu admin thì đặt lại bằng chính seed (đây là cách duy nhất, vì không có màn hình
+đổi mật khẩu). Không truyền biến thì mật khẩu cũ được giữ nguyên:
+
+```bash
+SEED_ADMIN_PASSWORD='mat-khau-moi' npm run seed
+# đăng nhập: admin@theuni.vn
+```
+
+Khác biệt so với MySQL cần nhớ khi viết query (đã gói sẵn trong `lib/mongo.ts`):
+
+- **Id là chuỗi ObjectId 24 hex**, không phải số. Đọc id từ form bằng `oid()`, kiểm tra id lấy
+  từ URL bằng `isObjectId()` trước khi query (không thì lỗi P2023 thành 500 thay vì 404).
+- **`contains` phân biệt hoa/thường** (MySQL dùng collation `_ci` nên không). Dùng `like()` —
+  hàm này vừa bật `mode: "insensitive"` vừa escape ký tự regex, thiếu escape thì khách gõ `(`
+  vào ô tìm kiếm là vỡ query.
+- **Mongo phân biệt `field = null` với `field không tồn tại`.** Lọc menu cấp 1 phải dùng
+  `NO_PARENT` để bắt cả hai dạng.
+- **Không cascade được trên self-relation** (`Menu.parent`): xoá menu cha phải xoá mục con
+  trước, nếu không Prisma báo P2014.
+- **Không có khoá chính ghép**: `CategoryProduct` / `ProductTag` dùng `id` thay thế +
+  `@@unique` để giữ nguyên ràng buộc.
 
 ## Các trang
 

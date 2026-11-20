@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import {
+  SITE_NAME,
+  TITLE_SUFFIX,
+  articleJsonLd,
+  breadcrumbJsonLd,
+  buildMetadata,
+  excerptFrom,
+} from "@/lib/seo";
 import RawPage from "@/components/RawPage";
 import { rawPages, findNewsTitle } from "@/lib/pages";
 import { db } from "@/lib/db";
 import { sectionTuVan } from "@/lib/homeHtml";
 import {
+  PRODUCT_CARD_INCLUDE,
   buildCollectionHtml,
   buildPaginationHtml,
   buildProductCard,
@@ -11,6 +21,8 @@ import {
   type SelectedFilters,
 } from "@/lib/collectionHtml";
 import {
+  CONTENT_PAGE,
+  NOT_FOUND_PAGE,
   buildArticleHtml,
   buildBlogListHtml,
   buildContactHtml,
@@ -18,7 +30,8 @@ import {
   buildStaticPageHtml,
   buildToc,
 } from "@/lib/articleHtml";
-import { buildProductDetailHtml, richTuVanHtml } from "@/lib/productHtml";
+import { buildProductDetailHtml } from "@/lib/productHtml";
+import { HOME_CRUMB } from "@/lib/layoutHtml";
 import { beautifyContent } from "@/lib/contentHtml";
 import HomeSwipers from "@/components/HomeSwipers";
 import type { Prisma } from "@prisma/client";
@@ -34,18 +47,85 @@ const parseList = (v: string | undefined) => (v ? v.split(",").filter(Boolean) :
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const path = `/${slug}`;
+
   const cat = await db.category.findUnique({ where: { slug } });
-  if (cat) return { title: `${cat.name} - THE UNI` };
-  const product = await db.product.findUnique({ where: { slug } });
-  if (product) return { title: `${product.name} - THE UNI` };
+  if (cat) {
+    return buildMetadata({
+      title: cat.seoTitle || cat.name,
+      description: cat.seoDescription || excerptFrom(cat.description),
+      path,
+      image: cat.bannerImage,
+    });
+  }
+
+  const product = await db.product.findUnique({
+    where: { slug },
+    include: { images: { orderBy: { position: "asc" }, take: 1 } },
+  });
+  if (product) {
+    return buildMetadata({
+      title: product.seoTitle || product.name,
+      description: product.seoDescription || excerptFrom(product.description),
+      path,
+      image: product.images[0]?.url,
+    });
+  }
+
   const blogCat = await db.articleCategory.findUnique({ where: { slug } });
-  if (blogCat) return { title: `${blogCat.name} - THE UNI` };
+  if (blogCat) {
+    // Chuyên mục chưa có bài là trang mỏng — cho `noindex` thay vì để Google
+    // lập chỉ mục một trang trống rồi tính vào chất lượng chung của tên miền.
+    const count = await db.article.count({
+      where: { articleCategoryId: blogCat.id, status: "published" },
+    });
+    return buildMetadata({
+      title: blogCat.name,
+      description: `Bài viết mới nhất về ${blogCat.name.toLowerCase()} từ ${SITE_NAME}.`,
+      path,
+      noIndex: count === 0,
+    });
+  }
+
   const article = await db.article.findUnique({ where: { slug } });
-  if (article) return { title: `${article.title} - THE UNI` };
+  if (article) {
+    return buildMetadata({
+      title: article.seoTitle || article.title,
+      // Ưu tiên chữ người viết đặt; không có thì rút từ thân bài. `excerpt` và
+      // `seoDescription` hiện đang trống ở toàn bộ 20 bài, nên nhánh cuối mới là
+      // nhánh chạy thật.
+      description: article.seoDescription || article.excerpt || excerptFrom(article.body),
+      path,
+      image: article.thumbnail,
+      publishedTime: article.publishedAt,
+      modifiedTime: article.updatedAt,
+    });
+  }
+
   const page = await db.page.findUnique({ where: { slug } });
-  if (page) return { title: `${page.title} - THE UNI` };
-  if (slug === "lien-he") return { title: "Liên hệ - THE UNI" };
-  if (slug === "cau-hoi-thuong-gap") return { title: "Câu hỏi thường gặp - THE UNI" };
+  if (page) {
+    return buildMetadata({
+      title: page.seoTitle || page.title,
+      description: page.seoDescription || excerptFrom(page.body),
+      path,
+    });
+  }
+
+  if (slug === CONTENT_PAGE.CONTACT.slug) {
+    return buildMetadata({
+      title: CONTENT_PAGE.CONTACT.title,
+      description: `Liên hệ ${SITE_NAME} để được tư vấn và báo giá đồng phục.`,
+      path,
+    });
+  }
+  if (slug === CONTENT_PAGE.FAQ.slug) {
+    return buildMetadata({
+      title: CONTENT_PAGE.FAQ.title,
+      description: `Giải đáp thắc mắc thường gặp khi đặt đồng phục tại ${SITE_NAME}.`,
+      path,
+    });
+  }
+
   const raw: Record<string, string> = {
     "tin-tuc": "Tin tức",
     "cam-nang": "Cẩm nang",
@@ -53,7 +133,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     "bang-gia-ao-lop": "Bảng giá áo lớp",
     "bang-mau-vai": "Bảng màu vải",
   };
-  return { title: `${raw[slug] ?? findNewsTitle(slug) ?? "Đang cập nhật"} - THE UNI` };
+  const known = raw[slug] ?? findNewsTitle(slug);
+  if (known) return buildMetadata({ title: known, path });
+
+  // Không khớp gì -> trang sẽ trả 404, metadata chỉ để không lọt chỉ mục.
+  return { title: `${NOT_FOUND_PAGE.TITLE}${TITLE_SUFFIX}`, robots: { index: false, follow: true } };
 }
 
 /* ============ TRANG LOẠI SẢN PHẨM (ao-thun, ao-polo...) ============ */
@@ -61,7 +145,7 @@ async function TypeCollectionPage({
   ptype,
   sp,
 }: {
-  ptype: { id: number; name: string };
+  ptype: { id: string; name: string };
   sp: Record<string, string | undefined>;
 }) {
   const page = Math.max(1, Number(sp.page) || 1);
@@ -73,7 +157,7 @@ async function TypeCollectionPage({
       orderBy: [{ position: "asc" }, { id: "asc" }],
       skip: (page - 1) * PER_PAGE,
       take: PER_PAGE,
-      include: { images: { orderBy: { position: "asc" }, take: 2 } },
+      include: PRODUCT_CARD_INCLUDE,
     }),
   ]);
   const html = buildCollectionHtml({
@@ -84,7 +168,6 @@ async function TypeCollectionPage({
       `?page=${p}`
     ),
     tuVanHtml: sectionTuVan(),
-    fullWidth: true,
     emptyMessage: "Loại sản phẩm này đang được cập nhật mẫu — liên hệ để xem thêm thiết kế nhé!",
   });
   return <RawPage html={html} />;
@@ -95,7 +178,7 @@ async function CollectionPage({
   cat,
   sp,
 }: {
-  cat: { id: number; name: string; kind: string; slug: string };
+  cat: { id: string; name: string; kind: string; slug: string; description: string | null };
   sp: Record<string, string | undefined>;
 }) {
   const selected: SelectedFilters = {
@@ -131,7 +214,7 @@ async function CollectionPage({
       orderBy: [{ position: "asc" }, { id: "asc" }],
       skip: (page - 1) * PER_PAGE,
       take: PER_PAGE,
-      include: { images: { orderBy: { position: "asc" }, take: 2 } },
+      include: PRODUCT_CARD_INCLUDE,
     }),
     db.tag.findMany({ orderBy: { position: "asc" } }),
     db.productType.findMany({ orderBy: { position: "asc" } }),
@@ -159,6 +242,7 @@ async function CollectionPage({
 
   const html = buildCollectionHtml({
     heading: cat.name,
+    descriptionHtml: cat.description,
     sidebarHtml: buildSidebarHtml({
       phanLoai: phanLoai.map((t) => ({ slug: t.slug, name: t.name })),
       types: types.map((t) => ({ slug: t.slug, name: t.name })),
@@ -259,7 +343,8 @@ export default async function Page({ params, searchParams }: Props) {
   const blogCat = await db.articleCategory.findUnique({ where: { slug } });
   if (blogCat && blogCat.isActive) {
     const page = Math.max(1, Number(sp.page) || 1);
-    const PER = 20;
+    // Lưới thẻ 3 cột (desktop) / 2 cột (mobile): 18 bài một trang thì hàng nào cũng đủ.
+    const PER = 18;
     const whereArt = { status: "published" as const, articleCategoryId: blogCat.id };
     const [tabs, totalArt, arts] = await Promise.all([
       db.articleCategory.findMany({ where: { isActive: true }, orderBy: { position: "asc" } }),
@@ -272,7 +357,7 @@ export default async function Page({ params, searchParams }: Props) {
       }),
     ]);
     const html = buildBlogListHtml({
-      heading: blogCat.name.toUpperCase(),
+      heading: blogCat.name,
       activeSlug: slug,
       tabs,
       cards: arts,
@@ -285,7 +370,12 @@ export default async function Page({ params, searchParams }: Props) {
   }
 
   // 4. Bài viết chi tiết (DB — quản lý trong admin)
-  const article = await db.article.findUnique({ where: { slug } });
+  const article = await db.article.findUnique({
+    // Kèm chuyên mục để dựng breadcrumb — truy vấn riêng chỉ để lấy tên là thừa
+    // một vòng đi DB trên đường render nóng.
+    where: { slug },
+    include: { category: { select: { name: true, slug: true } } },
+  });
   if (article && article.status === "published") {
     const related = await db.article.findMany({
       where: {
@@ -307,8 +397,34 @@ export default async function Page({ params, searchParams }: Props) {
       tocHtml,
       related,
     });
+    // Dữ liệu có cấu trúc: Google dùng để hiện ngày đăng, tác giả và ảnh trong
+    // kết quả tìm kiếm, và để hiện breadcrumb thay cho URL trần.
+    const jsonLd = [
+      articleJsonLd({
+        title: article.title,
+        path: `/${slug}`,
+        description: article.seoDescription || article.excerpt || excerptFrom(article.body),
+        image: article.thumbnail,
+        publishedAt: article.publishedAt,
+        updatedAt: article.updatedAt,
+        author: article.author,
+      }),
+      breadcrumbJsonLd([
+        HOME_CRUMB,
+        ...(article.category
+          ? [{ name: article.category.name, path: `/${article.category.slug}` }]
+          : []),
+        { name: article.title, path: `/${slug}` },
+      ]),
+    ];
+
     return (
       <>
+        <script
+          type="application/ld+json"
+          // Nội dung do mình dựng từ dữ liệu đã escape, không phải HTML người dùng nhập.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <RawPage html={html} />
         <HomeSwipers />
       </>
@@ -316,7 +432,7 @@ export default async function Page({ params, searchParams }: Props) {
   }
 
   // 5. FAQ (DB — quản lý trong admin)
-  if (slug === "cau-hoi-thuong-gap") {
+  if (slug === CONTENT_PAGE.FAQ.slug) {
     const groups = await db.faqCategory.findMany({
       orderBy: { position: "asc" },
       include: { faqs: { where: { isActive: true }, orderBy: { position: "asc" } } },
@@ -329,7 +445,7 @@ export default async function Page({ params, searchParams }: Props) {
   }
 
   // 6. Liên hệ (settings — cùng nguồn với footer)
-  if (slug === "lien-he") {
+  if (slug === CONTENT_PAGE.CONTACT.slug) {
     const rows = await db.setting.findMany();
     const st: Record<string, string> = {};
     for (const r of rows) st[r.key] = r.value || "";
@@ -344,23 +460,22 @@ export default async function Page({ params, searchParams }: Props) {
 
   // 8. Trang snapshot còn sót (nếu có)
   const raw = rawPages[slug];
-  if (raw) return <RawPage html={raw.html} />;
+  // Snapshot có khối "Nội dung liên quan" là slider — cần HomeSwipers như trang bài viết.
+  if (raw)
+    return (
+      <>
+        <RawPage html={raw.html} />
+        <HomeSwipers />
+      </>
+    );
 
-  // 4. Chưa có nội dung
-  const title = findNewsTitle(slug) ?? "NỘI DUNG ĐANG CẬP NHẬT";
-  return (
-    <div className="bodywrap" style={{ minHeight: "50vh" }}>
-      <div className="container">
-        <div className="title_white_new">
-          <h1 className="title-confiden-product-home" style={{ marginTop: 44 }}>{title}</h1>
-          <p className="line-bottom-title"></p>
-          <p className="subtitle-confiden-product text-center" style={{ color: "#fff" }}>
-            Nội dung của trang này đang được cập nhật. Vui lòng quay lại{" "}
-            <a href="/" style={{ color: "#f4bd24" }}>trang chủ</a> hoặc{" "}
-            <a href="/lien-he" style={{ color: "#f4bd24" }}>liên hệ</a> với chúng tôi.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+  // 4. Không khớp gì cả -> 404 THẬT.
+  //
+  // Trước đây chỗ này render một trang "Đang cập nhật" kèm mã 200, nghĩa là MỌI
+  // đường dẫn bịa ra đều là một trang hợp lệ với Google: /sitemap.xml, /robots.txt,
+  // mọi link gõ sai, mọi URL crawler tự nghĩ ra. Đó là soft 404 — Google lập chỉ
+  // mục rác vô hạn và loãng hẳn thứ hạng của trang thật.
+  //
+  // `notFound()` trả đúng 404 và render app/not-found.tsx.
+  notFound();
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { versioned } from "@/lib/assetVersion";
 
 export const metadata: Metadata = {
   title: "THE UNI Admin",
@@ -10,14 +11,10 @@ export default function AdminRootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <>
-      {/* eslint-disable-next-line @next/next/no-css-tags */}
-      <link rel="stylesheet" href="/css/admin-fonts.css" precedence="default" />
-      {/* eslint-disable-next-line @next/next/no-css-tags */}
-      <link rel="stylesheet" href="/css/quill.snow.css" precedence="default" />
-      {/* eslint-disable-next-line @next/next/no-css-tags */}
-      <link rel="stylesheet" href="/css/quill-table-better.css" precedence="default" />
-      {/* eslint-disable-next-line @next/next/no-css-tags */}
-      <link rel="stylesheet" href="/css/admin.css" precedence="default" />
+      <link rel="stylesheet" href={versioned("/css/admin-fonts.css")} precedence="default" />
+      <link rel="stylesheet" href={versioned("/css/quill.snow.css")} precedence="default" />
+      <link rel="stylesheet" href={versioned("/css/quill-table-better.css")} precedence="default" />
+      <link rel="stylesheet" href={versioned("/css/admin.css")} precedence="default" />
       {children}
     </>
   );

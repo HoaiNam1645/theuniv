@@ -3,26 +3,41 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 4392",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "seed": "node prisma/seed.mjs",
+    "lint": "eslint .",
+    "lint:ci": "eslint . --max-warnings=23"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
+    "fabric": "^6.9.1",
     "jose": "^6.2.3",
     "next": "16.2.10",
     "prisma": "^6.19.3",
     "quill": "^2.0.3",
     "quill-table-better": "^1.2.3",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^4.3.3",
+    "warpvas": "^1.0.4",
+    "warpvas-perspective": "^1.0.2"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.2.10",
+    "playwright": "^1.62.1",
     "typescript": "^5"
   }
 }

@@ -1,54 +1,36 @@
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import Icon from "@/components/admin/Icon";
 import UploadInput from "@/components/admin/UploadInput";
+import SliderMobileCheck from "@/components/admin/SliderMobileCheck";
 import ConfirmSubmit from "@/components/admin/ConfirmSubmit";
 import { flash } from "@/lib/flash";
+import { oid } from "@/lib/mongo";
+import LayoutTab from "./LayoutTab";
 
-// Sau mỗi thay đổi: làm mới trang chủ ngay lập tức (không chờ ISR 60s)
-function refreshHome() {
-  revalidatePath("/admin/appearance/home");
-  revalidatePath("/");
-}
+import {
+  HOME_SECTIONS,
+  HOME_TAB,
+  HOME_TAB_LABEL,
+  SECTION_MEDIA,
+  homeTabHref,
+  type HomeTab,
+} from "@/lib/homeSections";
+import { hasUnpublishedChanges, readHomeDraft, refreshHome } from "@/lib/homeLayout";
 
-const TABS = [
-  { key: "sliders", label: "Slider" },
-  { key: "banners", label: "Banner" },
-  { key: "types", label: "Sản phẩm nổi bật" },
-  { key: "brands", label: "Khách hàng" },
-  { key: "testimonials", label: "Phản hồi" },
-];
 
-// Nhóm banner theo section trên trang chủ để user biết ảnh nằm ở đâu
-const BANNER_SECTIONS: {
-  title: string;
-  note: string;
-  slots: { slot: string; label: string; hint: string }[];
-}[] = [
-  {
-    title: 'Khu "WE KEEP YOUR MEMORIES ON YOUR T-SHIRT"',
-    note: "Ngay dưới slider đầu trang — 1 banner lớn, 2 ô vuông và 1 banner dọc",
-    slots: [
-      { slot: "home_grid_1", label: "Banner lớn", hint: "Nằm trên cùng bên trái · khổ ngang 900×411" },
-      { slot: "home_grid_2", label: "Ô vuông trái", hint: "Dưới banner lớn, ô bên trái · 450×450" },
-      { slot: "home_grid_3", label: "Ô vuông phải", hint: "Dưới banner lớn, ô bên phải · 450×450" },
-      { slot: "home_side", label: "Banner dọc + nút bấm", hint: "Cột cao bên phải cả khu, có nút màu vàng" },
-    ],
-  },
-  {
-    title: 'Khu "SẢN XUẤT ĐỒNG PHỤC"',
-    note: "3 hàng ảnh giới thiệu, mỗi hàng gồm 1 ảnh dọc + 1 ảnh ngang có nút XEM CHI TIẾT",
-    slots: [
-      { slot: "sxdp_side_1", label: "Hàng 1 — ảnh dọc", hint: "Bên trái hàng 1 (khu Áo lớp)" },
-      { slot: "sxdp_wide_1", label: "Hàng 1 — ảnh ngang", hint: "Bên phải hàng 1, chữ + nút nằm bên trái ảnh" },
-      { slot: "sxdp_wide_2", label: "Hàng 2 — ảnh ngang", hint: "Bên trái hàng 2, chữ + nút nằm bên phải ảnh" },
-      { slot: "sxdp_side_2", label: "Hàng 2 — ảnh dọc", hint: "Bên phải hàng 2 (khu Áo doanh nghiệp)" },
-      { slot: "sxdp_side_3", label: "Hàng 3 — ảnh dọc", hint: "Bên trái hàng 3 (khu Phụ kiện)" },
-      { slot: "sxdp_wide_3", label: "Hàng 3 — ảnh ngang", hint: "Bên phải hàng 3, chữ + nút nằm bên trái ảnh" },
-    ],
-  },
-];
+
+// Tab và danh sách ô banner đều dựng TỪ SSOT `homeSections.ts`, không gõ lại.
+// Bản chép cũ ở đây đã trôi khỏi SSOT ngay ngày đầu (3 dòng mô tả khác nhau) —
+// đúng kiểu lệch âm thầm mà việc gom về một nguồn sinh ra để chặn.
+const TABS = (Object.values(HOME_TAB) as HomeTab[]).map((key) => ({
+  key,
+  label: HOME_TAB_LABEL[key],
+}));
+
+const BANNER_SECTIONS = HOME_SECTIONS.filter(
+  (s) => s.media === SECTION_MEDIA.BANNER_SLOTS && s.slots?.length,
+).map((s) => ({ title: s.label, note: s.note, slots: s.slots ?? [] }));
 
 const num = (v: FormDataEntryValue | null) => (v ? Number(v) || 0 : 0);
 const str = (v: FormDataEntryValue | null) => String(v || "").trim() || null;
@@ -58,13 +40,13 @@ export default async function AppearancePage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
-  const { tab = "sliders" } = await searchParams;
+  const { tab = HOME_TAB.LAYOUT } = await searchParams;
 
   /* ============ SLIDERS ============ */
   async function saveSlider(fd: FormData) {
     "use server";
     await db.slider.update({
-      where: { id: num(fd.get("id")) },
+      where: { id: oid(fd.get("id")) },
       data: {
         title: str(fd.get("title")),
         imageDesktop: String(fd.get("imageDesktop") || ""),
@@ -96,7 +78,7 @@ export default async function AppearancePage({
   }
   async function delSlider(fd: FormData) {
     "use server";
-    await db.slider.delete({ where: { id: num(fd.get("id")) } });
+    await db.slider.delete({ where: { id: oid(fd.get("id")) } });
     await flash("Đã xóa");
     refreshHome();
   }
@@ -105,7 +87,7 @@ export default async function AppearancePage({
   async function saveBanner(fd: FormData) {
     "use server";
     await db.banner.update({
-      where: { id: num(fd.get("id")) },
+      where: { id: oid(fd.get("id")) },
       data: {
         image: String(fd.get("image") || ""),
         link: str(fd.get("link")),
@@ -120,7 +102,7 @@ export default async function AppearancePage({
   async function saveType(fd: FormData) {
     "use server";
     await db.productType.update({
-      where: { id: num(fd.get("id")) },
+      where: { id: oid(fd.get("id")) },
       data: {
         name: String(fd.get("name") || ""),
         image: str(fd.get("image")),
@@ -137,7 +119,7 @@ export default async function AppearancePage({
   async function saveBrand(fd: FormData) {
     "use server";
     await db.brandLogo.update({
-      where: { id: num(fd.get("id")) },
+      where: { id: oid(fd.get("id")) },
       data: {
         title: str(fd.get("title")),
         image: String(fd.get("image") || ""),
@@ -167,7 +149,7 @@ export default async function AppearancePage({
   }
   async function delBrand(fd: FormData) {
     "use server";
-    await db.brandLogo.delete({ where: { id: num(fd.get("id")) } });
+    await db.brandLogo.delete({ where: { id: oid(fd.get("id")) } });
     await flash("Đã xóa");
     refreshHome();
   }
@@ -176,7 +158,7 @@ export default async function AppearancePage({
   async function saveTesti(fd: FormData) {
     "use server";
     await db.testimonial.update({
-      where: { id: num(fd.get("id")) },
+      where: { id: oid(fd.get("id")) },
       data: {
         title: String(fd.get("title") || ""),
         quote: String(fd.get("quote") || ""),
@@ -208,7 +190,7 @@ export default async function AppearancePage({
   }
   async function delTesti(fd: FormData) {
     "use server";
-    await db.testimonial.delete({ where: { id: num(fd.get("id")) } });
+    await db.testimonial.delete({ where: { id: oid(fd.get("id")) } });
     await flash("Đã xóa");
     refreshHome();
   }
@@ -226,7 +208,7 @@ export default async function AppearancePage({
       <div className="page-head">
         <div>
           <h1>Giao diện trang chủ</h1>
-          <p>Sửa xong bấm Lưu — trang chủ cập nhật ngay lập tức.</p>
+          <p>Bố cục và chữ đi qua bản nháp; ảnh và danh sách có hiệu lực ngay.</p>
         </div>
         <a className="btn-outline" href="/" target="_blank" rel="noreferrer">
           <Icon name="external" size={15} /> Xem trang chủ
@@ -235,14 +217,22 @@ export default async function AppearancePage({
 
       <div className="seg">
         {TABS.map((t) => (
-          <Link key={t.key} href={`/admin/appearance/home?tab=${t.key}`} className={tab === t.key ? "active" : ""}>
+          <Link key={t.key} href={homeTabHref(t.key)} className={tab === t.key ? "active" : ""}>
             {t.label}
           </Link>
         ))}
       </div>
 
       {/* ============ TAB: SLIDER ============ */}
-      {tab === "sliders" && (
+      {tab === HOME_TAB.LAYOUT && (
+        <LayoutTab
+          layout={await readHomeDraft()}
+          banners={banners}
+          dirty={await hasUnpublishedChanges()}
+        />
+      )}
+
+      {tab === HOME_TAB.SLIDERS && (
         <div className="panel panel-plain">
           <table className="admin-table table-editor">
             <thead>
@@ -263,7 +253,10 @@ export default async function AppearancePage({
                     <img className="thumb thumb-wide" src={s.imageDesktop} alt="" />
                   </td>
                   <td><UploadInput formId={`sl${s.id}`} name="imageDesktop" defaultValue={s.imageDesktop} /></td>
-                  <td><UploadInput formId={`sl${s.id}`} name="imageMobile" defaultValue={s.imageMobile || ""} /></td>
+                  <td>
+                    <UploadInput formId={`sl${s.id}`} name="imageMobile" defaultValue={s.imageMobile || ""} />
+                    <SliderMobileCheck src={s.imageMobile} />
+                  </td>
                   <td><input form={`sl${s.id}`} name="link" defaultValue={s.link || ""} className="url-input" /></td>
                   <td><input form={`sl${s.id}`} name="position" type="number" defaultValue={s.position} className="num-input" /></td>
                   <td style={{ textAlign: "center" }}>
@@ -300,7 +293,7 @@ export default async function AppearancePage({
       )}
 
       {/* ============ TAB: BANNER ============ */}
-      {tab === "banners" && (
+      {tab === HOME_TAB.BANNERS && (
         <div className="panel panel-plain">
           <table className="admin-table table-editor">
             <thead>
@@ -356,7 +349,7 @@ export default async function AppearancePage({
       )}
 
       {/* ============ TAB: SẢN PHẨM NỔI BẬT (vòng tròn) ============ */}
-      {tab === "types" && (
+      {tab === HOME_TAB.TYPES && (
         <div className="panel panel-plain">
           <table className="admin-table table-editor">
             <thead>
@@ -395,7 +388,7 @@ export default async function AppearancePage({
       )}
 
       {/* ============ TAB: KHÁCH HÀNG (logo) ============ */}
-      {tab === "brands" && (
+      {tab === HOME_TAB.BRANDS && (
         <div className="panel panel-plain">
           <table className="admin-table table-editor">
             <thead>
@@ -450,7 +443,7 @@ export default async function AppearancePage({
       )}
 
       {/* ============ TAB: PHẢN HỒI ============ */}
-      {tab === "testimonials" && (
+      {tab === HOME_TAB.TESTIMONIALS && (
         <div className="panel panel-plain">
           <table className="admin-table table-editor">
             <thead>

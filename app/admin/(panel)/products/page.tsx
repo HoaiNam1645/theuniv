@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import Icon from "@/components/admin/Icon";
 import ConfirmSubmit from "@/components/admin/ConfirmSubmit";
 import { flash } from "@/lib/flash";
+import { like, oid } from "@/lib/mongo";
+import { PRODUCT_STATUS_LABEL } from "@/lib/products";
 
 const num = (v: FormDataEntryValue | null) => (v ? Number(v) || 0 : 0);
 const str = (v: FormDataEntryValue | null) => String(v || "").trim();
@@ -94,7 +96,7 @@ export default async function ProductsPage({
   }
 
   const where = {
-    ...(q ? { name: { contains: q } } : {}),
+    ...(q ? { name: like(q) } : {}),
     ...(cat ? { categories: { some: { category: { slug: cat } } } } : {}),
   };
   const [products] = await Promise.all([
@@ -112,7 +114,7 @@ export default async function ProductsPage({
 
   async function deleteProduct(formData: FormData) {
     "use server";
-    await db.product.delete({ where: { id: Number(formData.get("id")) } });
+    await db.product.delete({ where: { id: oid(formData.get("id")) } });
     await flash("Đã xóa sản phẩm");
     revalidatePath("/admin/products");
   }
@@ -120,7 +122,7 @@ export default async function ProductsPage({
   async function saveCategory(fd: FormData) {
     "use server";
     await db.category.update({
-      where: { id: num(fd.get("id")) },
+      where: { id: oid(fd.get("id")) },
       data: {
         name: str(fd.get("name")),
         slug: str(fd.get("slug")),
@@ -145,7 +147,7 @@ export default async function ProductsPage({
   }
   async function delCategory(fd: FormData) {
     "use server";
-    await db.category.delete({ where: { id: num(fd.get("id")) } });
+    await db.category.delete({ where: { id: oid(fd.get("id")) } });
     await flash("Đã xóa danh mục (sản phẩm bên trong được giữ lại)");
     revalidatePath("/admin/products");
   }
@@ -217,7 +219,7 @@ export default async function ProductsPage({
                 </td>
                 <td>
                   <span className={`badge badge-${p.status === "active" ? "won" : "lost"}`}>
-                    {p.status === "active" ? "Hiển thị" : p.status === "hidden" ? "Ẩn" : "Nháp"}
+                    {PRODUCT_STATUS_LABEL[p.status]}
                   </span>
                 </td>
                 <td style={{ whiteSpace: "nowrap" }}>

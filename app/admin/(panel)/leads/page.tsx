@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import Icon from "@/components/admin/Icon";
 import ConfirmSubmit from "@/components/admin/ConfirmSubmit";
 import { flash } from "@/lib/flash";
+import { oid } from "@/lib/mongo";
 import type { LeadStatus } from "@prisma/client";
 
 const STATUSES: { value: LeadStatus; label: string }[] = [
@@ -30,7 +31,7 @@ export default async function LeadsPage({
 
   async function updateLead(formData: FormData) {
     "use server";
-    const id = Number(formData.get("id"));
+    const id = oid(formData.get("id"));
     const newStatus = String(formData.get("status")) as LeadStatus;
     const note = String(formData.get("note") || "");
     await db.lead.update({ where: { id }, data: { status: newStatus, note: note || null } });
@@ -40,7 +41,7 @@ export default async function LeadsPage({
 
   async function deleteLead(formData: FormData) {
     "use server";
-    await db.lead.delete({ where: { id: Number(formData.get("id")) } });
+    await db.lead.delete({ where: { id: oid(formData.get("id")) } });
     await flash("Đã xóa đơn tư vấn");
     revalidatePath("/admin/leads");
   }

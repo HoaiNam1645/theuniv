@@ -1,10 +1,32 @@
-// Builder cho: trang chuyên mục bài viết, bài viết chi tiết, FAQ, liên hệ, trang tĩnh.
-// Markup theo theme gốc — dữ liệu đổ từ DB.
+// Builder cho: trang chuyên mục bài viết, bài viết chi tiết, FAQ, liên hệ, trang tĩnh, 404.
+// Chuyên mục, FAQ, liên hệ, trang tĩnh, 404 ghép từ khối chung ở lib/layoutHtml.ts (CSS ở
+// public/css/page-content.css); bài viết chi tiết giữ markup theo theme gốc.
 
 import { richTuVanHtml } from "@/lib/productHtml";
+import { HOME_CRUMB, buildPostCard, esc, pageHeroHtml, type PostCardData } from "@/lib/layoutHtml";
+import { STATE_CLASS } from "@/lib/siteDom";
 
-const esc = (s: string | null | undefined) =>
-  (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+/** Trang nội dung không có bản ghi trong DB: đường dẫn + tiêu đề cho hero, breadcrumb, metadata. */
+export const CONTENT_PAGE = {
+  FAQ: { slug: "cau-hoi-thuong-gap", title: "Câu hỏi thường gặp" },
+  CONTACT: { slug: "lien-he", title: "Liên hệ" },
+} as const;
+
+/** Trang 404 (app/not-found.tsx): tiêu đề dùng cho cả hero lẫn metadata. */
+export const NOT_FOUND_PAGE = {
+  CODE: "404",
+  TITLE: "Không tìm thấy trang",
+  DESCRIPTION: "Đường dẫn có thể đã đổi hoặc không còn tồn tại.",
+  HOME_CTA: "Về trang chủ",
+} as const;
+
+/** Chữ cố định của các trang nội dung — không thuộc dữ liệu quản trị. */
+const CONTENT_TEXT = {
+  BLOG_TABS: "Chuyên mục bài viết",
+  BLOG_EMPTY: "Chuyên mục này chưa có bài viết — quay lại sau nhé!",
+  FAQ_EMPTY: "Câu hỏi thường gặp đang được cập nhật — cần giải đáp ngay, gửi thông tin ở form bên dưới nhé!",
+  PAGE_EMPTY: "Nội dung trang đang được cập nhật — quay lại sau nhé!",
+} as const;
 
 // Gán id cho h2/h3 trong nội dung (theo đúng quy tắc theme: text lowercase, space -> _)
 // và sinh sẵn mục lục dạng tocbot để CSS gốc ăn.
@@ -49,12 +71,7 @@ export function buildToc(bodyHtml: string): { body: string; tocHtml: string } {
 }
 
 export type BlogTab = { slug: string; name: string };
-export type BlogCard = {
-  slug: string;
-  title: string;
-  thumbnail: string | null;
-  excerpt: string | null;
-};
+export type BlogCard = PostCardData;
 
 /* ============ CHUYÊN MỤC BÀI VIẾT ============ */
 export function buildBlogListHtml(opts: {
@@ -66,65 +83,30 @@ export function buildBlogListHtml(opts: {
   tuVanHtml: string;
 }) {
   const tabs = opts.tabs
-    .map(
-      (t) => `				<li class="nav-item ${t.slug === opts.activeSlug ? "active " : ""}">
-					<a class="a-img" href="/${esc(t.slug)}" title=""> ${esc(t.name)} </a>
-				</li>`
-    )
-    .join("\n");
+    .map((t) => {
+      const active = t.slug === opts.activeSlug;
+      return `<a class="uni-blog__tab${active ? ` ${STATE_CLASS.ACTIVE}` : ""}" href="/${esc(t.slug)}"${active ? ' aria-current="page"' : ""}>${esc(t.name)}</a>`;
+    })
+    .join("\n\t\t\t");
 
-  const cards = opts.cards.length
-    ? opts.cards
-        .map(
-          (a) => `					<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 col-12">
-						<div class="item-blog">
-							<div class="block-thumb">
-								<a class="thumb" href="/${esc(a.slug)}" title="${esc(a.title)}">
-									<img src="${esc(a.thumbnail || "/theme/logo-share.png")}" alt="${esc(a.title)}">
-								</a>
-							</div>
-							<div class="block-content" style="color: #fff;">
-								<h3>
-									<a href="/${esc(a.slug)}" title="${esc(a.title)}">${esc(a.title)}</a>
-								</h3>
-								<p class="justify">${esc(a.excerpt)} </p>
-								<div class="box-blok"> <a href=""> </a> </div>
-							</div>
-						</div>
-					</div>`
-        )
-        .join("\n")
-    : `					<div class="col-12" style="color:#fff; text-align:center; padding: 40px 10px;">
-						<p>Chuyên mục này chưa có bài viết — quay lại sau nhé!</p>
-					</div>`;
+  const list = opts.cards.length
+    ? `<div class="uni-grid uni-grid--3">
+${opts.cards.map((a) => buildPostCard(a)).join("\n")}
+		</div>`
+    : `<p class="uni-content-empty">${CONTENT_TEXT.BLOG_EMPTY}</p>`;
 
   return `		<div class="bodywrap">
-			<div class="blog_wrapper layout-blog">
-				<div class="container">
-					<div class="row">
-						<div class="block-collection col-lg-12 col-12">
-							<div class="title_white_new">
-								<h1 class="title-confiden-product-home" style="margin-top: 44px;"> ${esc(opts.heading)} </h1>
-								<p class="line-bottom-title"></p>
-							</div>
-						</div>
-						<ul class="menu-blog">
-${tabs}
-						</ul>
-						<div class="right-content col-lg-12 col-12 order-lg-2">
-							<div class="row">
-${cards}
-							</div>
-${opts.paginationHtml}
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-12 col-12">
+${pageHeroHtml({ title: opts.heading })}
+<section class="uni-blog">
+	<div class="uni-container">
+		<nav class="uni-blog__tabs" aria-label="${CONTENT_TEXT.BLOG_TABS}">
+			${tabs}
+		</nav>
+		${list}
+${opts.paginationHtml ? `		<div class="uni-blog__pager">${opts.paginationHtml}</div>` : ""}
+	</div>
+</section>
 ${opts.tuVanHtml}
-						</div>
-					</div>
-				</div>
-			</div>
 		</div>`;
 }
 
@@ -223,68 +205,49 @@ ${richTuVanHtml()}
 /* ============ FAQ ============ */
 export type FaqGroup = {
   name: string;
-  faqs: { id: number; question: string; answer: string }[];
+  faqs: { id: string; question: string; answer: string }[];
 };
 
 export function buildFaqHtml(groups: FaqGroup[], tuVanHtml: string) {
+  // Class theme (box-category-faqs, title-confiden-product-home, faqtitle-*, text-*, hidden)
+  // và id qs_/qsic_/qstg_/faqtitle_ là móc mở/đóng của components/ThemeJS.tsx.
   const blocks = groups
     .filter((g) => g.faqs.length)
     .map(
-      (g) => `						<div class="box-category-faqs">
-							<h3 class="title-confiden-product-home text-center mb-0">
-								${esc(g.name)}
-								<i style="font-size: 27px;" class="category-faqs-fa fa fa-angle-up text-white float-right"></i>
-							</h3>
+      (g) => `			<div class="box-category-faqs uni-faq__group">
+				<h2 class="title-confiden-product-home uni-faq__group-title">
+					<span>${esc(g.name)}</span>
+					<i class="category-faqs-fa fa fa-angle-up" aria-hidden="true"></i>
+				</h2>
 ${g.faqs
         .map(
-          (f) => `							<div class="box-article-faqs">
-								<button class="faqtitle-hidden d-flex justify-content-between align-items-center" id="qs_${f.id}" style="margin-top: -1px;" type="button" data-faq="${f.id}">
-									<h4 id="faqtitle_${f.id}" class="mb-0 text-left pl-4 pt-1 pb-1 float-left text-white faqtitle-hover font-size-mobile-faq font-weight-bold">
-										${esc(f.question)}
-									</h4>
-									<i id="qsic_${f.id}" style="font-size: 27px;" class="fa fa-angle-down text-white"></i>
-								</button>
-								<div id="qstg_${f.id}" style="border: solid 2px white; background-color: white;" class="text-dark mb-1 p-4 hidden font-size-mobile-faq Montserrat-Regular tts-content-faq faq-rte">
-									${f.answer}
-								</div>
-							</div>`
+          (f) => `				<div class="box-article-faqs uni-faq__item">
+					<h3 class="uni-faq__heading">
+						<button class="faqtitle-hidden uni-faq__q" id="qs_${f.id}" type="button" data-faq="${f.id}">
+							<span id="faqtitle_${f.id}" class="text-white uni-faq__q-text">${esc(f.question)}</span>
+							<i id="qsic_${f.id}" class="fa fa-angle-down text-white" aria-hidden="true"></i>
+						</button>
+					</h3>
+					<div id="qstg_${f.id}" class="text-dark hidden rte faq-rte tts-content-faq uni-faq__a">
+						${f.answer}
+					</div>
+				</div>`
         )
         .join("\n")}
-						</div>`
+			</div>`
     )
     .join("\n");
 
   return `		<div class="bodywrap">
-		<section class="page">
-	<div class="container">
-		<div class="pg_page padding-top-15">
-			<div class="row">
-				<div class="col-12">
-					<div class="page-title category-title">
-						<div class="title_white_new">
-							<h1 class="title-confiden-product-home" style="margin-top: 44px;">
-								Câu hỏi thường gặp
-							</h1>
-							<p class="line-bottom-title"></p>
-						</div>
-					</div>
-					<div class="content-page-faq rte">
-						<div class="mt-0 pt-0 mt-lg-5 pt-lg-3">
-							<div class="mt-5 pt-3" id="search-append">
-${blocks}
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-12 col-12">
-${tuVanHtml}
-					</div>
-				</div>
-			</div>
+${pageHeroHtml({ title: CONTENT_PAGE.FAQ.title })}
+<section class="uni-faq">
+	<div class="uni-container">
+		<div class="uni-faq__list">
+${blocks || `			<p class="uni-content-empty">${CONTENT_TEXT.FAQ_EMPTY}</p>`}
 		</div>
 	</div>
 </section>
+${tuVanHtml}
 		</div>`;
 }
 
@@ -293,94 +256,121 @@ const ICON_MAP = `<svg aria-hidden="true" focusable="false" role="img" xmlns="ht
 const ICON_MAIL = `<svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-envelope fa-w-16"><path fill="currentColor" d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"></path></svg>`;
 const ICON_PHONE = `<svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-phone-alt fa-w-16"><path fill="currentColor" d="M497.39 361.8l-112-48a24 24 0 0 0-28 6.9l-49.6 60.6A370.66 370.66 0 0 1 130.6 204.11l60.6-49.6a23.94 23.94 0 0 0 6.9-28l-48-112A24.16 24.16 0 0 0 122.6.61l-104 24A24 24 0 0 0 0 48c0 256.5 207.9 464 464 464a24 24 0 0 0 23.4-18.6l24-104a24.29 24.29 0 0 0-14.01-27.6z"></path></svg>`;
 
+/** Chữ cố định của trang liên hệ — không thuộc dữ liệu quản trị. */
+const CONTACT_TEXT = {
+  ADDRESS: "Địa chỉ",
+  EMAIL: "Email",
+  HOTLINE: "Hotline",
+  MST: "MST",
+  BANK: "STK Công ty",
+  MAP: "Bản đồ",
+  FORM_TITLE: "Liên hệ với chúng tôi",
+  NAME: "Họ và tên",
+  PHONE: "Điện thoại",
+  BODY: "Nội dung",
+  SUBMIT: "Gửi thông tin",
+} as const;
+
+/** Icon PNG (đen) của theme làm mask — tô cùng màu với icon SVG để thấy được trên nền tối. */
+const maskIcon = (src: string) => `<span class="uni-contact__mask" style="--icon: url(${src})"></span>`;
+const ICON_FILE = maskIcon("/theme/ic_file.png");
+const ICON_BANK = maskIcon("/theme/credit-card.png");
+
+const contactRow = (icon: string, label: string, valueHtml: string) => `				<li class="uni-contact__row">
+					<span class="uni-contact__icon" aria-hidden="true">${icon}</span>
+					<div>
+						<b class="uni-contact__label">${label}</b>
+						<div class="uni-contact__value">${valueHtml}</div>
+					</div>
+				</li>`;
+
+const contactField = (label: string, control: string) => `				<label class="uni-contact__field">
+					<span class="uni-contact__field-label">${label}</span>
+					${control}
+				</label>`;
+
 export function buildContactHtml(s: Record<string, string>) {
-  const bank = s.company_bank
-    ? `					<div class="item">
-						<i class="fa"> <img src="/theme/credit-card.png" alt=""/> </i>
-						<b>STK Công ty:</b> ${esc(s.company_bank)}
-					</div>`
+  // Ô nào quản trị chưa điền thì bỏ cả dòng, không để nhãn trơ trọi.
+  const rows = [
+    s.address && contactRow(ICON_MAP, CONTACT_TEXT.ADDRESS, esc(s.address)),
+    s.email && contactRow(ICON_MAIL, CONTACT_TEXT.EMAIL, `<a href="mailto:${esc(s.email)}">${esc(s.email)}</a>`),
+    s.hotline &&
+      contactRow(
+        ICON_PHONE,
+        CONTACT_TEXT.HOTLINE,
+        `<a class="uni-contact__hotline" href="tel:${esc(s.hotline.replace(/\s/g, ""))}">${esc(s.hotline)}</a>`
+      ),
+    s.company_mst && contactRow(ICON_FILE, CONTACT_TEXT.MST, esc(s.company_mst)),
+    s.company_bank && contactRow(ICON_BANK, CONTACT_TEXT.BANK, esc(s.company_bank)),
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const name = s.company_name ? `			<h2 class="uni-contact__title">${esc(s.company_name)}</h2>\n` : "";
+  const map = s.map_embed_url
+    ? `			<div class="uni-contact__map">
+				<iframe src="${esc(s.map_embed_url)}" title="${CONTACT_TEXT.MAP}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+			</div>`
     : "";
 
+  // Giữ nguyên action, id, name từng ô: ThemeJS gửi lead theo đúng các tên này.
+  const fields = [
+    contactField(CONTACT_TEXT.NAME, `<input type="text" class="form-control" required value="" name="contact[Name]">`),
+    contactField(CONTACT_TEXT.EMAIL, `<input type="email" class="form-control" value="" name="contact[email]">`),
+    contactField(CONTACT_TEXT.PHONE, `<input type="number" name="contact[phone]" class="form-control" required>`),
+    contactField(CONTACT_TEXT.BODY, `<textarea name="contact[body]" id="comment" class="form-control" rows="5"></textarea>`),
+  ].join("\n");
+
   return `		<div class="bodywrap">
-			<h1 class="title-head-contact a-left d-none">Liên hệ</h1>
-			<div class="clearfix" style="min-height: 1px"> </div>
-			<div class="layout-contact">
-				<div class="container">
-					<div class="box-contact">
-						<div class="row">
-							<div class="col-lg-6 col-12">
-								<div class="contact">
-									<h4> ${esc(s.company_name)} </h4>
-									<div class="time_work">
-										<div class="item">
-											${ICON_MAP}
-											<b>Địa chỉ:</b> ${esc(s.address)}
-										</div>
-										<div class="item">
-											${ICON_MAIL}
-											<b>Email:</b> <a href="mailto:${esc(s.email)}">${esc(s.email)}</a>
-										</div>
-										<div class="item">
-											${ICON_PHONE}
-											<b>Hotline:</b> <a class="fone" href="tel:${esc((s.hotline || "").replace(/\s/g, ""))}">${esc(s.hotline)}</a>
-										</div>
-										<div class="item">
-											<i class="fa"> <img src="/theme/ic_file.png" alt=""/> </i>
-											<b>MST:</b> ${esc(s.company_mst)}
-										</div>
-${bank}
-									</div>
-								</div>
-								<div class="form-contact">
-									<h4> Liên hệ với chúng tôi </h4>
-									<div id="pagelogin">
-										<form method="post" action="/postcontact" id="contact" accept-charset="UTF-8">
-											<div class="group_contact">
-												<input placeholder="Họ và tên" type="text" class="form-control form-control-lg" required value="" name="contact[Name]">
-												<input placeholder="Email" type="email" class="form-control form-control-lg" value="" name="contact[email]">
-												<input type="number" placeholder="Điện thoại*" name="contact[phone]" class="form-control form-control-lg" required>
-												<textarea placeholder="Nội dung" name="contact[body]" id="comment" class="form-control content-area form-control-lg" rows="5"></textarea>
-												<button type="submit" class="btn-lienhe">Gửi thông tin</button>
-											</div>
-										</form>
-									</div>
-								</div>
-							</div>
-							<div class="col-lg-6 col-12">
-								<div id="contact_map" class="map">
-									<iframe src="${esc(s.map_embed_url)}" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+${pageHeroHtml({ title: CONTENT_PAGE.CONTACT.title })}
+<section class="uni-section">
+	<div class="uni-container uni-contact">
+		<div class="uni-contact__card uni-contact__card--info">
+${name}			<ul class="uni-contact__list">
+${rows}
+			</ul>
+${map}
+		</div>
+		<div class="uni-contact__card uni-contact__card--form">
+			<h2 class="uni-contact__title">${CONTACT_TEXT.FORM_TITLE}</h2>
+			<form method="post" action="/postcontact" id="contact" class="uni-contact__form" accept-charset="UTF-8">
+${fields}
+				<button type="submit" class="uni-btn uni-btn--primary uni-btn--block">${CONTACT_TEXT.SUBMIT}</button>
+			</form>
+		</div>
+	</div>
+</section>
+		</div>`;
+}
+
+/* ============ 404 ============ */
+export function buildNotFoundHtml() {
+  return `		<div class="bodywrap">
+${pageHeroHtml({ title: NOT_FOUND_PAGE.TITLE, description: NOT_FOUND_PAGE.DESCRIPTION })}
+<section class="uni-section">
+	<div class="uni-container uni-not-found">
+		<p class="uni-not-found__code" aria-hidden="true">${NOT_FOUND_PAGE.CODE}</p>
+		<a class="uni-btn uni-btn--primary" href="${HOME_CRUMB.path}">${NOT_FOUND_PAGE.HOME_CTA}</a>
+	</div>
+</section>
 		</div>`;
 }
 
 /* ============ TRANG TĨNH (chính sách...) ============ */
 export function buildStaticPageHtml(title: string, bodyHtml: string) {
-  return `		<div class="bodywrap">
-	<section class="page">
-		<div class="container">
-			<div class="pg_page padding-top-15">
-			<div class="row">
-				<div class="col-12">
-					<div class="page-title category-title">
-						<div class="title_white_new">
-								<h1 class="title-confiden-product-home" style="margin-top: 44px;">
-									${esc(title)}
-								</h1>
-								<p class="line-bottom-title"></p>
-							</div>
-					</div>
-					<div class="content-page rte">
+  // `content-page rte`: public/css/content_style.css trình bày nội dung soạn từ admin theo class này.
+  const body = bodyHtml.trim()
+    ? `		<div class="content-page rte uni-page-body">
 ${bodyHtml}
-					</div>
-				</div>
-			</div>
-			</div>
-		</div>
-	</section>
-</div>`;
+		</div>`
+    : `		<p class="uni-content-empty">${CONTENT_TEXT.PAGE_EMPTY}</p>`;
+
+  return `		<div class="bodywrap">
+${pageHeroHtml({ title })}
+<section class="uni-section">
+	<div class="uni-container">
+${body}
+	</div>
+</section>
+		</div>`;
 }

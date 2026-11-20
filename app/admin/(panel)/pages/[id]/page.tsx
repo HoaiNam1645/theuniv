@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { flash } from "@/lib/flash";
+import { isObjectId } from "@/lib/mongo";
 import RichText from "@/components/admin/RichText";
 import type { PublishStatus } from "@prisma/client";
 
@@ -11,13 +13,14 @@ export default async function EditPagePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const page = await db.page.findUnique({ where: { id: Number(id) } });
+  if (!isObjectId(id)) notFound(); // id rác từ URL -> 404 thay vì lỗi query
+  const page = await db.page.findUnique({ where: { id } });
   if (!page) notFound();
 
   async function save(fd: FormData) {
     "use server";
     await db.page.update({
-      where: { id: Number(id) },
+      where: { id },
       data: {
         title: String(fd.get("title") || "").trim(),
         body: String(fd.get("body") || ""),
@@ -58,7 +61,7 @@ export default async function EditPagePage({
         </div>
         <div className="edit-actions">
           <button className="btn" type="submit">Lưu trang</button>
-          <a href="/admin/pages">Hủy bỏ</a>
+          <Link href="/admin/pages">Hủy bỏ</Link>
         </div>
       </form>
     </>

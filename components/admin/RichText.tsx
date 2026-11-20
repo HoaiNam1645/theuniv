@@ -1,5 +1,7 @@
 "use client";
 
+import { IMAGE_ACCEPT, uploadAdminImage } from "./ImageDrop";
+
 import { useEffect, useRef } from "react";
 import type QuillType from "quill";
 
@@ -88,21 +90,20 @@ export default function RichText({
               image() {
                 const picker = document.createElement("input");
                 picker.type = "file";
-                picker.accept = "image/jpeg,image/png,image/webp,image/gif";
+                picker.accept = IMAGE_ACCEPT;
                 picker.onchange = async () => {
                   const file = picker.files?.[0];
                   if (!file) return;
-                  const fd = new FormData();
-                  fd.append("file", file);
+                  // Dùng chung đường tải lên với ImageDrop — Quill có toolbar riêng
+                  // nên không dùng được giao diện kéo thả, nhưng KHÔNG được có bản
+                  // chép thứ hai của phần gọi API.
                   try {
-                    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-                    const d = await res.json();
-                    if (!d.ok) return alert(d.error || "Upload thất bại");
+                    const url = await uploadAdminImage(file);
                     const range = quill.getSelection(true);
-                    quill.insertEmbed(range.index, "image", d.url);
+                    quill.insertEmbed(range.index, "image", url);
                     quill.setSelection(range.index + 1);
-                  } catch {
-                    alert("Không upload được ảnh, thử lại nhé");
+                  } catch (e) {
+                    alert(e instanceof Error ? e.message : "Không upload được ảnh, thử lại nhé");
                   }
                 };
                 picker.click();
@@ -126,6 +127,10 @@ export default function RichText({
           // nếu không chữ ngoài web sẽ không xuống dòng được.
           const html = quill.getSemanticHTML().replace(/&nbsp;|&#160;/g, " ");
           inputRef.current.value = quill.getText().trim() ? html : "";
+          // Gán thẳng `.value` KHÔNG sinh sự kiện, nên mọi thứ nghe ngóng form
+          // (bảng chấm SEO) sẽ không hay biết nội dung vừa đổi. Bắn `input` để
+          // ô ẩn này hành xử như một ô nhập bình thường.
+          inputRef.current.dispatchEvent(new Event("input", { bubbles: true }));
         }
       };
       quill.on("text-change", sync);

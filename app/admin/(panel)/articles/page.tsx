@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import Icon from "@/components/admin/Icon";
 import ConfirmSubmit from "@/components/admin/ConfirmSubmit";
 import { flash } from "@/lib/flash";
+import { like, oid } from "@/lib/mongo";
 
 const num = (v: FormDataEntryValue | null) => (v ? Number(v) || 0 : 0);
 const str = (v: FormDataEntryValue | null) => String(v || "").trim();
@@ -17,7 +18,7 @@ export default async function ArticlesPage({
 
   async function deleteArticle(fd: FormData) {
     "use server";
-    await db.article.delete({ where: { id: num(fd.get("id")) } });
+    await db.article.delete({ where: { id: oid(fd.get("id")) } });
     await flash("Đã xóa bài viết");
     revalidatePath("/admin/articles");
     revalidatePath("/");
@@ -26,7 +27,7 @@ export default async function ArticlesPage({
   async function saveCat(fd: FormData) {
     "use server";
     await db.articleCategory.update({
-      where: { id: num(fd.get("id")) },
+      where: { id: oid(fd.get("id")) },
       data: {
         name: str(fd.get("name")),
         slug: str(fd.get("slug")),
@@ -49,7 +50,7 @@ export default async function ArticlesPage({
   }
   async function delCat(fd: FormData) {
     "use server";
-    const id = num(fd.get("id"));
+    const id = oid(fd.get("id"));
     await db.article.updateMany({ where: { articleCategoryId: id }, data: { articleCategoryId: null } });
     await db.articleCategory.delete({ where: { id } });
     await flash("Đã xóa chuyên mục (bài viết được giữ lại)");
@@ -128,7 +129,7 @@ export default async function ArticlesPage({
   }
 
   const where = {
-    ...(q ? { title: { contains: q } } : {}),
+    ...(q ? { title: like(q) } : {}),
     ...(cat ? { category: { slug: cat } } : {}),
   };
   const articles = await db.article.findMany({
