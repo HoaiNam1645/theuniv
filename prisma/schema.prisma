@@ -261,6 +261,9 @@ model Slider {
   imageDesktop String  @map("image_desktop")
   imageMobile  String? @map("image_mobile")
   link         String?
+  /// Slug danh mục hiện slider này ở đầu trang (VD "dong-phuc-ao-lop"). Trống = trang chủ.
+  /// Thêm ở đợt refactor-web; bản ghi cũ không có trường này vẫn đọc bình thường.
+  page         String?
   position     Int     @default(0)
   isActive     Boolean @default(true) @map("is_active")
 

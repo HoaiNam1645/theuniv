@@ -27,6 +27,8 @@ const THEME_CSS = [
   "/css/product_style.scss.css",
   "/css/content_style.css",
   "/css/custom.css",
+  // Theme gốc viết cho nền tối — đổi các khối còn dùng sang nền sáng (refactor-web).
+  "/css/theme-light.css",
   // Bố cục chung (header, footer, card...) rồi bố cục riêng từng nhóm trang — nạp sau
   // CSS theme để thắng cascade mà không cần !important.
   "/css/site-layout.css",

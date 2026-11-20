@@ -108,13 +108,13 @@
   padding: 24px;
   overflow-y: auto;
   background: var(--uni-surface);
-  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.5);
+  border-left: 1px solid var(--uni-line);
   transform: translateX(100%);
   visibility: hidden;
   transition: transform var(--uni-ease), visibility var(--uni-ease);
 }
 html:has(.uni-filter.open-mb) { overflow: hidden; }
-.opacity_sidebar { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.opacity_sidebar { background: rgba(22, 35, 29, 0.55); }
 
 .uni-filter__top {
   display: flex;

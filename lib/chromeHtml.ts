@@ -16,6 +16,9 @@ export const CHROME_SETTING = {
   LOGO: "site_logo",
   ZALO: "float_zalo",
   ZALO_PHONE: "zalo_phone",
+  /** Hai dòng của thanh trên cùng (top bar) — sửa ở /admin/appearance/header. */
+  TOPBAR_ZALO: "topbar_zalo_text",
+  TOPBAR_ADDRESS: "topbar_address_text",
 } as const;
 
 export const DEFAULT_BRAND = "THE UNI";
@@ -81,6 +84,10 @@ const POLICY_LINKS = [
 /** Giá trị dự phòng khi quản trị chưa điền ô tương ứng — giữ đúng chữ đang hiển thị. */
 const CHROME_FALLBACK = {
   CTA_LABEL: "PC BRAND",
+  TOPBAR_ZALO: "Đặt hàng liên hệ zalo: 0399.259.155",
+  TOPBAR_ADDRESS: "Địa chỉ xưởng: K249/83/4 Hà Huy Tập - Thanh Khê - Đà Nẵng",
+  /** Nút góc phải header: đường chốt đơn chính của xưởng là Zalo. */
+  HEADER_CTA: "Báo giá Zalo",
   FOOTER_COL1_TITLE: "ĐỒNG PHỤC",
   FOOTER_COL2_TITLE: "PICKLEBALL",
   LINK: "#",
@@ -159,13 +166,39 @@ ${subs}
     .join("\n");
 }
 
+/** Link Google Maps tìm theo địa chỉ công ty (settings `address`). */
+export function mapSearchUrl(address: string) {
+  return address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : "";
+}
+
+/** Có link thì <a> mở tab mới, không có thì chữ trơn. */
+const maybeLink = (href: string, cls: string, text: string) =>
+  href
+    ? `<a class="${cls}" href="${esc(href)}" target="_blank" rel="noopener">${esc(text)}</a>`
+    : `<span class="${cls}">${esc(text)}</span>`;
+
+/** Thanh trên cùng: dòng Zalo đặt hàng + dòng địa chỉ xưởng. Ẩn khi cuộn (ThemeJS gắn class). */
+function topbarHtml(s: Record<string, string>) {
+  const zaloText = s[CHROME_SETTING.TOPBAR_ZALO] || CHROME_FALLBACK.TOPBAR_ZALO;
+  const addressText = s[CHROME_SETTING.TOPBAR_ADDRESS] || CHROME_FALLBACK.TOPBAR_ADDRESS;
+  return `<div class="uni-topbar">
+		<div class="uni-topbar__inner">
+			${maybeLink(zaloChatUrl(s), "uni-topbar__item", zaloText)}
+			<span class="uni-topbar__sep" aria-hidden="true">/</span>
+			${maybeLink(mapSearchUrl(s.address || ""), "uni-topbar__item", addressText)}
+		</div>
+	</div>`;
+}
+
 export function buildHeaderHtml(menus: MenuNode[], s: Record<string, string>) {
   const branding = storeBranding(s);
   const brand = esc(branding.brand);
   const logo = esc(branding.logo);
-  const cta = `<a class="uni-btn uni-btn--primary uni-btn--sm uni-header__cta" href="${esc(s.pcbrand_url || CHROME_FALLBACK.LINK)}" target="_blank" rel="noopener">${esc(s.pcbrand_label || CHROME_FALLBACK.CTA_LABEL)}</a>`;
+  const zalo = zaloChatUrl(s);
+  const cta = `<a class="uni-btn uni-btn--primary uni-btn--sm uni-btn--chat uni-header__cta" href="${esc(zalo || CHROME_FALLBACK.LINK)}" target="_blank" rel="noopener">${CHROME_FALLBACK.HEADER_CTA}</a>`;
 
   return `<header class="uni-header">
+	${topbarHtml(s)}
 	<div class="uni-header__bar">
 		${brandLink(brand, logo)}
 		<nav class="uni-nav" aria-label="${CHROME_TEXT.NAV}">
@@ -254,6 +287,10 @@ export function buildFooterHtml(s: Record<string, string>) {
   const policies = POLICY_LINKS.map(
     (p) => `<li><a href="${p.href}" title="${p.label}">${p.label}</a></li>`
   ).join("");
+  // Nút "BY KIMDUYÊN" (pcbrand_*) trước nằm ở header — header giờ dành cho nút báo giá Zalo.
+  const partner = s.pcbrand_url
+    ? `\n\t\t\t\t<p class="uni-footer__partner"><a href="${esc(s.pcbrand_url)}" target="_blank" rel="noopener">${esc(s.pcbrand_label || CHROME_FALLBACK.CTA_LABEL)}</a></p>`
+    : "";
   const map = s.map_embed_url
     ? `			<div class="uni-footer__col uni-footer__col--map">
 				<h4 class="uni-footer__title">${CHROME_TEXT.MAP}</h4>
@@ -277,7 +314,7 @@ export function buildFooterHtml(s: Record<string, string>) {
 					<li><img src="/theme/ic_phone.png" alt=""/><a href="tel:${esc((s.hotline || "").replace(/\s/g, ""))}" title="${esc(s.hotline)}">${esc(s.hotline)}</a></li>
 					<li><img src="/theme/ic_envelope.png" alt=""/><a href="mailto:${esc(s.email)}" title="${esc(s.email)}">${esc(s.email)}</a></li>
 				</ul>
-				<ul class="uni-footer__policies">${policies}</ul>
+				<ul class="uni-footer__policies">${policies}</ul>${partner}
 			</div>
 ${map}
 ${footerSocialCol({

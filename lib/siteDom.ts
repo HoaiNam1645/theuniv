@@ -43,4 +43,6 @@ export const STATE_CLASS = {
   ACTIVE: "is-active",
   /** Gắn lên <html> khi drawer mở: khoá cuộn trang phía sau. */
   SCROLL_LOCK: "uni-scroll-lock",
+  /** Gắn lên header khi đã cuộn khỏi đầu trang: top bar thu lên. */
+  SCROLLED: "is-scrolled",
 } as const;

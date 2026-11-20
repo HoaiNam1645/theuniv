@@ -68,10 +68,14 @@ export default function ThemeJS() {
       closeFilters();
     };
 
+    const header = document.querySelector(".uni-header");
     const onScroll = () => {
       if (window.scrollY > 300) backtop?.classList.add("show");
       else backtop?.classList.remove("show");
+      // Rời đầu trang thì thu top bar (site-layout.css: .uni-header.is-scrolled).
+      header?.classList.toggle(STATE_CLASS.SCROLLED, window.scrollY > 40);
     };
+    onScroll();
 
     // Form tư vấn (theme Sapo cũ post về /postcontact) -> gửi vào API leads
     const onSubmit = (e: Event) => {

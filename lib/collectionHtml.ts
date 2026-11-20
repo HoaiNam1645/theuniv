@@ -213,10 +213,18 @@ export function buildPaginationHtml(page: number, totalPages: number, makeUrl: (
 </nav>`;
 }
 
+/** Mô tả ở đầu trang danh mục: dài hơn mô tả SEO (160) — đủ 2-3 câu giới thiệu. */
+const HERO_DESC_MAX = 320;
+
 export function buildCollectionHtml(opts: {
   heading: string;
   /** Mô tả soạn ở admin (HTML) — hiện dưới tiêu đề thành chữ thuần. */
   descriptionHtml?: string | null;
+  /** Ảnh đầu trang (Category.bannerImage) — hero chia 2 cột. */
+  heroImage?: string | null;
+  heroActionsHtml?: string;
+  /** Slider gắn trang (pageSliderHtml) — nằm giữa hero và lưới sản phẩm. */
+  sliderHtml?: string;
   /** Kết quả buildSidebarHtml; "" = trang không có bộ lọc. */
   sidebarHtml: string;
   cards: string;
@@ -225,7 +233,8 @@ export function buildCollectionHtml(opts: {
   emptyMessage?: string;
 }) {
   return `		<div class="bodywrap">
-${pageHeroHtml({ title: opts.heading, description: excerptFrom(opts.descriptionHtml) })}
+${pageHeroHtml({ title: opts.heading, description: excerptFrom(opts.descriptionHtml, HERO_DESC_MAX), image: opts.heroImage, actionsHtml: opts.heroActionsHtml })}
+${opts.sliderHtml || ""}
 <section class="uni-listing">
 	<div class="uni-container">
 		<div class="uni-listing__bar">

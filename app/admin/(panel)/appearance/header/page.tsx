@@ -5,6 +5,7 @@ import UploadInput from "@/components/admin/UploadInput";
 import ConfirmSubmit from "@/components/admin/ConfirmSubmit";
 import { flash } from "@/lib/flash";
 import { NO_PARENT, oid } from "@/lib/mongo";
+import { CHROME_SETTING } from "@/lib/chromeHtml";
 
 // Header hiển thị trên mọi trang -> làm mới toàn bộ layout website
 function refreshSite() {
@@ -30,6 +31,8 @@ export default async function HeaderMenuPage() {
       site_logo: str(fd.get("site_logo")),
       pcbrand_label: str(fd.get("pcbrand_label")),
       pcbrand_url: str(fd.get("pcbrand_url")),
+      [CHROME_SETTING.TOPBAR_ZALO]: str(fd.get(CHROME_SETTING.TOPBAR_ZALO)),
+      [CHROME_SETTING.TOPBAR_ADDRESS]: str(fd.get(CHROME_SETTING.TOPBAR_ADDRESS)),
     });
     await flash("Đã lưu thương hiệu");
     refreshSite();
@@ -109,11 +112,19 @@ export default async function HeaderMenuPage() {
             <UploadInput name="site_logo" defaultValue={s.site_logo || ""} className="" />
           </label>
           <label>
-            Nút góc phải — chữ
+            Thanh trên cùng — dòng Zalo (bấm mở chat Zalo; để trống = chữ mặc định)
+            <input name={CHROME_SETTING.TOPBAR_ZALO} defaultValue={s[CHROME_SETTING.TOPBAR_ZALO] || ""} placeholder="Đặt hàng liên hệ zalo: 0399.259.155" />
+          </label>
+          <label>
+            Thanh trên cùng — dòng địa chỉ (bấm mở Google Maps theo địa chỉ ở Cài đặt)
+            <input name={CHROME_SETTING.TOPBAR_ADDRESS} defaultValue={s[CHROME_SETTING.TOPBAR_ADDRESS] || ""} placeholder="Địa chỉ xưởng: K249/83/4 Hà Huy Tập - Thanh Khê - Đà Nẵng" />
+          </label>
+          <label>
+            Link thương hiệu phụ ở footer — chữ
             <input name="pcbrand_label" defaultValue={s.pcbrand_label || ""} />
           </label>
           <label>
-            Nút góc phải — link
+            Link thương hiệu phụ ở footer — link
             <input name="pcbrand_url" defaultValue={s.pcbrand_url || ""} className="url-input" />
           </label>
           <div className="settings-actions">

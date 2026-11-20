@@ -26,6 +26,10 @@ export function pageHeroHtml(opts: {
   description?: string | null;
   /** Trang đã có <h1> riêng (VD bài viết) thì truyền "p" để không ra hai thẻ h1. */
   titleTag?: "h1" | "p";
+  /** Ảnh đầu trang (VD Category.bannerImage): có ảnh thì hero chia 2 cột chữ | ảnh. */
+  image?: string | null;
+  /** Hàng nút dưới mô tả (HTML đã escape sẵn). */
+  actionsHtml?: string;
 }) {
   const crumbs: Crumb[] = opts.crumbs ?? [HOME_CRUMB, { name: opts.title }];
   const trail = crumbs
@@ -39,11 +43,23 @@ export function pageHeroHtml(opts: {
   const desc = opts.description
     ? `\n\t\t<p class="uni-page-hero__desc">${esc(opts.description)}</p>`
     : "";
+  const actions = opts.actionsHtml ? `\n\t\t<div class="uni-page-hero__actions">${opts.actionsHtml}</div>` : "";
+  const text = `<nav class="uni-crumbs" aria-label="Breadcrumb">${trail}</nav>
+		<${tag} class="uni-page-hero__title">${esc(opts.title)}</${tag}>${desc}${actions}`;
 
-  return `<section class="uni-page-hero">
+  if (!opts.image) {
+    return `<section class="uni-page-hero">
 	<div class="uni-container">
-		<nav class="uni-crumbs" aria-label="Breadcrumb">${trail}</nav>
-		<${tag} class="uni-page-hero__title">${esc(opts.title)}</${tag}>${desc}
+		${text}
+	</div>
+</section>`;
+  }
+  return `<section class="uni-page-hero uni-page-hero--media">
+	<div class="uni-container uni-page-hero__grid">
+		<div class="uni-page-hero__text">
+		${text}
+		</div>
+		<div class="uni-page-hero__media"><img class="uni-page-hero__img" src="${esc(opts.image)}" alt="${esc(opts.title)}"></div>
 	</div>
 </section>`;
 }

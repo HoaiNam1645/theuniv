@@ -52,6 +52,7 @@ export default async function AppearancePage({
         imageDesktop: String(fd.get("imageDesktop") || ""),
         imageMobile: str(fd.get("imageMobile")),
         link: str(fd.get("link")),
+        page: str(fd.get("page")) || null,
         position: num(fd.get("position")),
         isActive: fd.get("isActive") === "on",
       },
@@ -70,6 +71,7 @@ export default async function AppearancePage({
         imageDesktop: img,
         imageMobile: str(fd.get("imageMobile")),
         link: str(fd.get("link")),
+        page: str(fd.get("page")) || null,
         position: (max._max.position ?? 0) + 1,
       },
     });
@@ -195,13 +197,21 @@ export default async function AppearancePage({
     refreshHome();
   }
 
-  const [sliders, banners, types, brands, testimonials] = await Promise.all([
-    db.slider.findMany({ orderBy: { position: "asc" } }),
+  const [sliders, banners, types, brands, testimonials, categories] = await Promise.all([
+    db.slider.findMany({ orderBy: [{ page: "asc" }, { position: "asc" }] }),
     db.banner.findMany({ orderBy: { id: "asc" } }),
     db.productType.findMany({ orderBy: { position: "asc" } }),
     db.brandLogo.findMany({ orderBy: { position: "asc" } }),
     db.testimonial.findMany({ orderBy: { position: "asc" } }),
+    db.category.findMany({ select: { slug: true, name: true }, orderBy: { position: "asc" } }),
   ]);
+  // Slider không gắn trang (trống) thuộc trang chủ; gắn slug danh mục thì hiện ở đầu trang đó.
+  const pageOptions = [
+    <option key="" value="">Trang chủ</option>,
+    ...categories.map((c) => (
+      <option key={c.slug} value={c.slug}>{c.name}</option>
+    )),
+  ];
 
   return (
     <>
@@ -241,6 +251,7 @@ export default async function AppearancePage({
                 <th>Ảnh desktop (URL)</th>
                 <th>Ảnh mobile (URL)</th>
                 <th>Link khi bấm</th>
+                <th style={{ width: 170 }}>Hiện ở trang</th>
                 <th style={{ width: 64 }}>Thứ tự</th>
                 <th style={{ width: 46 }}>Hiện</th>
                 <th style={{ width: 92 }}></th>
@@ -258,6 +269,11 @@ export default async function AppearancePage({
                     <SliderMobileCheck src={s.imageMobile} />
                   </td>
                   <td><input form={`sl${s.id}`} name="link" defaultValue={s.link || ""} className="url-input" /></td>
+                  <td>
+                    <select form={`sl${s.id}`} name="page" defaultValue={s.page || ""}>
+                      {pageOptions}
+                    </select>
+                  </td>
                   <td><input form={`sl${s.id}`} name="position" type="number" defaultValue={s.position} className="num-input" /></td>
                   <td style={{ textAlign: "center" }}>
                     <input form={`sl${s.id}`} name="isActive" type="checkbox" defaultChecked={s.isActive} />
@@ -280,6 +296,11 @@ export default async function AppearancePage({
                 <td><UploadInput formId="sl-add" name="imageDesktop" placeholder="upload hoặc dán URL ảnh" /></td>
                 <td><UploadInput formId="sl-add" name="imageMobile" placeholder="ảnh mobile (tùy chọn)" /></td>
                 <td><input form="sl-add" name="link" placeholder="/bst-ao-lop" className="url-input" /></td>
+                <td>
+                  <select form="sl-add" name="page" defaultValue="">
+                    {pageOptions}
+                  </select>
+                </td>
                 <td colSpan={2}></td>
                 <td>
                   <form id="sl-add" action={addSlider}>

@@ -2,8 +2,8 @@
 
 /* Biến màu inline trong <head> của trang gốc */
 :root {
-  --mainColor: #f4bd24;
-  --textColor: #231f20;
+  --mainColor: #004732; /* xanh rừng — bộ nhận diện mới, xem site-layout.css */
+  --textColor: #fff; /* chữ trên nền --mainColor */
 }
 
 /* Sidebar lọc mobile: mở bằng nút "Bộ lọc" */

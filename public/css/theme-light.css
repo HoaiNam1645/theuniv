@@ -1,0 +1,54 @@
+/* ==========================================================================
+   GHI ĐÈ THEME SAPO GỐC CHO NỀN SÁNG — đợt refactor-web
+   Theme gốc (main/product_style/blog_article_style... .scss.css) viết cho nền tối:
+   chữ trắng, viền trắng, nút đen/vàng. Các khối dưới đây vẫn còn được dùng (trang
+   sản phẩm, đầu trang bài viết/nội dung, khối nhận tư vấn kiểu cũ) nên đổi màu tại
+   đây. File nạp NGAY SAU CSS theme, selector giữ đúng độ ưu tiên của luật gốc để
+   thắng bằng thứ tự nạp; chỉ dùng !important ở chỗ luật gốc đã dùng !important.
+   Màu lấy từ biến khai trong site-layout.css (--c-*).
+   ========================================================================== */
+
+/* Tiêu đề kiểu cũ: H1 trang bài viết/nội dung, "Nhận tư vấn miễn phí", "Thiết kế tương tự". */
+.title_white_new .title-confiden-product-home,
+.title_white_ne2 .title-confiden-product-home,
+.layout-collection .title_white_new .title-confiden-product-home,
+.section_nhan_tu_van .title_white_new .title-confiden-product-home,
+.title-product,
+.productRelate .block-title h2,
+.productRelate .block-title h2 a { color: var(--c-primary); }
+.productRelate .block-title h2 a:hover { color: var(--c-primary-dark); }
+.section_nhan_tu_van .line-bottom-title,
+.productRelate .block-title .line-bottom-title { width: 48px; height: 3px; border: 0; background: var(--c-gold); }
+
+/* Trang sản phẩm */
+.layout-product .product-summary { color: var(--c-ink); }
+.product-action .product-info .product-name a { color: var(--c-ink); }
+.product-action .product-info:hover .product-name a { color: var(--c-primary); }
+.btn-contact-form-scroll h2 {
+  color: var(--c-on-primary) !important;
+  background: var(--c-primary);
+  border: 1px solid var(--c-primary);
+  border-radius: var(--uni-radius-sm);
+}
+.btn-contact-form-scroll h2:hover {
+  color: var(--c-on-primary) !important;
+  background-color: var(--c-primary-dark);
+}
+
+/* Khối nhận tư vấn kiểu cũ (trang sản phẩm) */
+.section_nhan_tu_van .group_contact input,
+.section_nhan_tu_van .group_contact textarea { color: var(--c-ink); border-color: var(--c-line-strong); border-radius: var(--uni-radius-sm); }
+.section_nhan_tu_van .group_contact .btn-lienhe {
+  color: var(--c-on-primary);
+  background: var(--c-primary);
+  border: 1px solid var(--c-primary);
+  border-radius: var(--uni-radius-sm);
+}
+.section_nhan_tu_van .group_contact .btn-lienhe:hover { color: var(--c-on-primary); background: var(--c-primary-dark); border-color: var(--c-primary-dark); }
+
+/* Nội dung bài viết / trang nội dung */
+.article-details,
+.content_right,
+.content-page { color: var(--c-ink); }
+.rte a,
+.rte a span { color: var(--c-primary); }

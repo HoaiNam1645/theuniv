@@ -45,7 +45,7 @@ export type HomeTab = (typeof HOME_TAB)[keyof typeof HOME_TAB];
 
 export const HOME_TAB_LABEL: Record<HomeTab, string> = {
   [HOME_TAB.LAYOUT]: "Bố cục & chữ",
-  [HOME_TAB.SLIDERS]: "Slider",
+  [HOME_TAB.SLIDERS]: "Slider (trang chủ & trang con)",
   [HOME_TAB.BANNERS]: "Banner",
   [HOME_TAB.TYPES]: "Sản phẩm nổi bật",
   [HOME_TAB.BRANDS]: "Khách hàng",
@@ -81,7 +81,30 @@ export const BANNER_SLOT = {
   GRID_SIDE: "home_side",
   sxdpSide: (row: number) => `sxdp_side_${row}`,
   sxdpWide: (row: number) => `sxdp_wide_${row}`,
+  // Trang chủ kiểu xưởng (refactor-web). Ảnh mặc định nạp bởi scripts/refactor-web-data.mjs.
+  hero: (n: number) => `home_hero_${n}`,
+  heroMobile: (n: number) => `home_hero_${n}_mb`,
+  PHOI: "home_phoi",
+  showcase: (n: number) => `home_showcase_${n}`,
 } as const;
+
+/** Số ảnh hero cố định (ảnh thêm thì vào tab Slider, chọn "Trang chủ"). */
+export const HERO_SLOT_COUNT = 2;
+/** Số ô ảnh khối "Từ maket đến thành phẩm": ô 1 là ảnh lớn bên trái. */
+export const SHOWCASE_SLOT_COUNT = 5;
+
+/** 4 trang con của menu "Đồng Phục" — khối "Đồng phục theo lĩnh vực" lấy tên, ảnh, mô tả từ danh mục. */
+export const SECTOR_SLUGS = [
+  "dong-phuc-doanh-nghiep",
+  "dong-phuc-ao-lop",
+  "dong-phuc-hang-quan-an",
+  "dong-phuc-spa-nail",
+] as const;
+
+/** 6 năng lực in trên banner "Xưởng sản xuất đồng phục" — key chữ + icon (lib/homeHtml.ts). */
+export const SERVICE_KEYS = ["s1", "s2", "s3", "s4", "s5", "s6"] as const;
+/** 5 bước quy trình đặt hàng. */
+export const PROCESS_STEPS = [1, 2, 3, 4, 5] as const;
 
 /** Hướng di chuyển section. */
 export const MOVE = { UP: "up", DOWN: "down" } as const;
@@ -133,16 +156,134 @@ export interface HomeSection {
  */
 export const HOME_SECTIONS: HomeSection[] = [
   {
-    id: "slider",
-    label: "Slider đầu trang",
-    note: "Khung ảnh lớn trên cùng, cao theo ảnh đang hiện; máy tính/tablet các ảnh tự chạy lần lượt, điện thoại (dùng ảnh mobile) chỉ đổi ảnh khi khách vuốt hoặc bấm chấm; 2 nút NHẬN TƯ VẤN / XEM BẢNG GIÁ nằm ngay dưới ảnh",
-    texts: [
-      { key: "ctaAdvice", label: "Nút trái", default: "NHẬN TƯ VẤN" },
-      { key: "ctaPrice", label: "Nút phải", default: "XEM BẢNG GIÁ" },
+    id: "hero",
+    label: "Banner đầu trang",
+    note: "Ảnh tràn ngang trên cùng, tự chuyển. Gồm 2 ảnh dưới đây + các slider chọn \"Trang chủ\" ở tab Slider. Ảnh điện thoại để trống thì dùng ảnh máy tính",
+    texts: [],
+    media: SECTION_MEDIA.BANNER_SLOTS,
+    slots: [
+      { slot: BANNER_SLOT.hero(1), label: "Ảnh 1", hint: "Khổ ngang ~2400×900" },
+      { slot: BANNER_SLOT.heroMobile(1), label: "Ảnh 1 — điện thoại", hint: "Khổ dọc ~1080×1350 (tuỳ chọn)" },
+      { slot: BANNER_SLOT.hero(2), label: "Ảnh 2", hint: "Khổ ngang ~2400×900" },
+      { slot: BANNER_SLOT.heroMobile(2), label: "Ảnh 2 — điện thoại", hint: "Khổ dọc ~1080×1350 (tuỳ chọn)" },
     ],
-    media: SECTION_MEDIA.COLLECTION,
-    manageHref: homeTabHref(HOME_TAB.SLIDERS),
-    manageLabel: "Quản lý ảnh slider",
+  },
+  {
+    id: "marquee",
+    label: "Dải chữ chạy",
+    note: "Dải nền xanh chạy ngang dưới banner. Các cụm cách nhau bằng dấu ·",
+    texts: [
+      {
+        key: "items",
+        label: "Nội dung (ngăn bằng dấu |)",
+        default: "XƯỞNG SẢN XUẤT ĐỒNG PHỤC | ĐỒNG PHỤC DOANH NGHIỆP | ÁO LỚP | HÀNG QUÁN ĂN | SPA NAIL | IN - THÊU THEO YÊU CẦU",
+      },
+    ],
+    media: SECTION_MEDIA.NONE,
+  },
+  {
+    id: "intro",
+    label: "Giới thiệu xưởng + video",
+    note: "Trái: giới thiệu, 3 cam kết, nút Zalo / gọi điện. Phải: video TikTok phát ngay trên trang",
+    texts: [
+      { key: "eyebrow", label: "Dòng nhỏ trên tiêu đề", default: "Xưởng sản xuất đồng phục tại Đà Nẵng" },
+      { key: "heading", label: "Tiêu đề", default: "Xưởng may đồng phục THE UNI" },
+      {
+        key: "body",
+        label: "Đoạn giới thiệu",
+        default:
+          "THE UNI nhận thiết kế, in, thêu và may đồng phục theo yêu cầu cho doanh nghiệp, lớp học, đội nhóm, nhà hàng quán ăn và tiệm spa nail. Gửi logo qua Zalo, xưởng lên maket miễn phí để bạn duyệt trước khi sản xuất.",
+      },
+      { key: "point1", label: "Cam kết 1", default: "Thiết kế maket miễn phí" },
+      { key: "point2", label: "Cam kết 2", default: "Sản xuất theo yêu cầu, đa dạng sản phẩm" },
+      { key: "point3", label: "Cam kết 3", default: "Chất lượng cao, đúng tiến độ" },
+      { key: "ctaQuote", label: "Nút Zalo", default: "Báo giá qua Zalo" },
+      { key: "ctaCall", label: "Nút gọi điện", default: "Gọi xưởng" },
+      {
+        key: "tiktok",
+        label: "Link video TikTok (link rút gọn vt.tiktok.com hoặc link đầy đủ)",
+        default: "https://www.tiktok.com/@xuonginaodanang/video/7642606504691928327",
+      },
+      { key: "videoLink", label: "Chữ link dưới video", default: "Xem trên TikTok" },
+    ],
+    media: SECTION_MEDIA.NONE,
+  },
+  {
+    id: "services",
+    label: "Năng lực sản xuất",
+    note: "6 ô icon + tên dịch vụ, nền xanh nhạt",
+    texts: [
+      { key: "heading", label: "Tiêu đề", default: "Xưởng nhận sản xuất" },
+      { key: "s1", label: "Ô 1", default: "Đồng phục doanh nghiệp" },
+      { key: "s2", label: "Ô 2", default: "Áo thun sự kiện" },
+      { key: "s3", label: "Ô 3", default: "Đồng phục CLB - team" },
+      { key: "s4", label: "Ô 4", default: "Mũ nón đồng phục" },
+      { key: "s5", label: "Ô 5", default: "Quà tặng thương hiệu" },
+      { key: "s6", label: "Ô 6", default: "In - thêu theo yêu cầu" },
+    ],
+    media: SECTION_MEDIA.NONE,
+  },
+  {
+    id: "sectors",
+    label: "Đồng phục theo lĩnh vực",
+    note: "4 ô dẫn tới 4 trang con của menu Đồng Phục. Ảnh, tên, mô tả lấy từ danh mục tương ứng",
+    texts: [
+      { key: "heading", label: "Tiêu đề", default: "Đồng phục theo lĩnh vực" },
+      { key: "cta", label: "Chữ link trong mỗi ô", default: "Xem mẫu" },
+    ],
+    media: SECTION_MEDIA.NONE,
+  },
+  {
+    id: "phoi",
+    label: "Phôi và bảng màu",
+    note: "Ảnh ngang các mẫu phôi + nút xem bảng màu vải",
+    texts: [
+      { key: "heading", label: "Tiêu đề", default: "Phôi áo có sẵn tại xưởng" },
+      { key: "sub", label: "Mô tả", default: "Đa dạng màu sắc, nhiều form dáng, chất liệu cao cấp." },
+      { key: "cta", label: "Chữ trên nút", default: "Xem bảng màu vải" },
+    ],
+    media: SECTION_MEDIA.BANNER_SLOTS,
+    slots: [{ slot: BANNER_SLOT.PHOI, label: "Ảnh phôi", hint: "Khổ ngang ~2400×900" }],
+  },
+  {
+    id: "showcase",
+    label: "Từ maket đến thành phẩm",
+    note: "Ảnh 1 lớn bên trái, 4 ảnh nhỏ bên phải. Chữ trên nút của mỗi ảnh = chú thích dưới ảnh",
+    texts: [
+      { key: "heading", label: "Tiêu đề", default: "Từ maket đến thành phẩm" },
+      {
+        key: "sub",
+        label: "Mô tả",
+        default: "Dự án đồng phục nhà hàng Vị Hương: polo cổ tàu, tạp dề dài, tạp dề ngắn và nón in logo. Xưởng lên maket, khách duyệt, rồi mới sản xuất.",
+      },
+    ],
+    media: SECTION_MEDIA.BANNER_SLOTS,
+    slots: [
+      { slot: BANNER_SLOT.showcase(1), label: "Ảnh lớn", hint: "Ảnh hàng thật, khổ dọc ~1080×1440" },
+      { slot: BANNER_SLOT.showcase(2), label: "Ảnh nhỏ 1", hint: "Maket hoặc ảnh thật, khổ 3:2" },
+      { slot: BANNER_SLOT.showcase(3), label: "Ảnh nhỏ 2", hint: "Khổ 3:2 hoặc vuông" },
+      { slot: BANNER_SLOT.showcase(4), label: "Ảnh nhỏ 3", hint: "Khổ 3:2 hoặc vuông" },
+      { slot: BANNER_SLOT.showcase(5), label: "Ảnh nhỏ 4", hint: "Khổ 3:2 hoặc vuông" },
+    ],
+  },
+  {
+    id: "process",
+    label: "Quy trình đặt hàng",
+    note: "5 bước đánh số trên nền xanh đậm",
+    texts: [
+      { key: "heading", label: "Tiêu đề", default: "Quy trình đặt hàng" },
+      { key: "t1", label: "Bước 1", default: "Tư vấn" },
+      { key: "d1", label: "Bước 1 — mô tả", default: "Nhắn Zalo loại áo, số lượng và logo." },
+      { key: "t2", label: "Bước 2", default: "Thiết kế maket" },
+      { key: "d2", label: "Bước 2 — mô tả", default: "Xưởng gửi maket miễn phí để bạn xem trước." },
+      { key: "t3", label: "Bước 3", default: "Duyệt mẫu" },
+      { key: "d3", label: "Bước 3 — mô tả", default: "Chốt màu vải, size và vị trí in thêu." },
+      { key: "t4", label: "Bước 4", default: "Sản xuất" },
+      { key: "d4", label: "Bước 4 — mô tả", default: "In, thêu và may tại xưởng." },
+      { key: "t5", label: "Bước 5", default: "Giao hàng" },
+      { key: "d5", label: "Bước 5 — mô tả", default: "Kiểm hàng và giao đúng hẹn." },
+    ],
+    media: SECTION_MEDIA.NONE,
   },
   {
     id: "danhmuc",
@@ -246,9 +387,15 @@ export interface HomeLayout {
   texts: Record<string, Record<string, string>>;
 }
 
+/**
+ * Khối của giao diện cũ (shop bán lẻ) — vẫn khai để admin bật lại được, nhưng ẩn
+ * mặc định từ đợt refactor-web: trang chủ giờ là trang xưởng.
+ */
+export const DEFAULT_HIDDEN_SECTIONS = ["danhmuc", "banner4", "sanpham"];
+
 export const defaultHomeLayout = (): HomeLayout => ({
   order: [...HOME_SECTION_IDS],
-  hidden: [],
+  hidden: [...DEFAULT_HIDDEN_SECTIONS],
   texts: {},
 });
 

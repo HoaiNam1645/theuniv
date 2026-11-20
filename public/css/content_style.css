@@ -2,7 +2,7 @@
    HỆ TRÌNH BÀY NỘI DUNG SOẠN TỪ ADMIN — THE UNI
    Mọi nội dung người quản trị gõ trong trình soạn thảo (tiêu đề, đoạn văn,
    bảng, danh sách, ghi chú, CTA...) tự lên khung đẹp theo ngôn ngữ thiết kế
-   của theme: nền trắng, chữ #1E1E1E, điểm nhấn vàng #f4bd24.
+   của theme: nền trắng, chữ #1E1E1E, điểm nhấn vàng champagne #c5a46d (đợt refactor-web).
    Các class .tbl-wrap/.uni-table/.btn-cta/.note-block/.swatch do
    lib/contentHtml.ts (beautifyContent) tự gắn lúc render.
    ========================================================================== */
@@ -39,7 +39,7 @@
   bottom: 0;
   width: 52px;
   height: 3px;
-  background: #f4bd24;
+  background: #c5a46d;
   border-radius: 2px;
 }
 .bg_blog .rte h2:first-child,
@@ -59,7 +59,7 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  background: #f4bd24;
+  background: #c5a46d;
   border-radius: 50%;
   margin-right: 8px;
   vertical-align: 2px;
@@ -79,7 +79,7 @@
 }
 .bg_blog .rte ul > li::marker,
 .content-page.rte ul > li::marker {
-  color: #f4bd24;
+  color: #c5a46d;
   font-size: 1.1em;
 }
 .bg_blog .rte ol > li::marker,
@@ -96,7 +96,7 @@
   padding: 16px 20px 16px 52px;
   background: #fff8e1;
   border: 0;
-  border-left: 4px solid #f4bd24;
+  border-left: 4px solid #c5a46d;
   border-radius: 10px;
   color: #4a4a4a;
   position: relative;
@@ -158,7 +158,7 @@ table.uni-table tbody:first-child > tr:first-child th {
   font-weight: 700;
   text-align: left;
   padding: 13px 16px;
-  border-bottom: 3px solid #f4bd24;
+  border-bottom: 3px solid #c5a46d;
   white-space: nowrap;
 }
 /* bảng do người dùng tự tạo trong admin có thể không có hàng th -> coi hàng đầu là tiêu đề */
@@ -166,7 +166,7 @@ table.uni-table:not(:has(th)) tbody tr:first-child td {
   background: #1e1e1e;
   color: #fff;
   font-weight: 700;
-  border-bottom: 3px solid #f4bd24;
+  border-bottom: 3px solid #c5a46d;
 }
 table.uni-table td {
   padding: 12px 16px;
@@ -217,23 +217,20 @@ a.btn-cta,
 .bg_blog .rte a.btn-cta,
 .content-page.rte a.btn-cta {
   display: inline-block;
-  background: #f4bd24;
-  color: #1e1e1e !important;
+  background: #004732;
+  color: #fff !important;
   font-weight: 700;
   font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 13px 34px;
-  border-radius: 999px;
+  border-radius: 2px;
   text-decoration: none !important;
-  box-shadow: 0 4px 14px rgba(244, 189, 36, 0.4);
-  transition: all 0.25s ease;
+  transition: background-color 0.16s ease;
 }
 a.btn-cta:hover {
-  background: #1e1e1e;
-  color: #f4bd24 !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  transform: translateY(-1px);
+  background: #00382a;
+  color: #fff !important;
 }
 /* đoạn chứa nút CTA: căn giữa, thoáng */
 .bg_blog .rte p:has(> a.btn-cta),

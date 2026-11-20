@@ -11,7 +11,9 @@ import {
 import RawPage from "@/components/RawPage";
 import { rawPages, findNewsTitle } from "@/lib/pages";
 import { db } from "@/lib/db";
-import { sectionTuVan } from "@/lib/homeHtml";
+import { pageSliderHtml, sectionTuVan } from "@/lib/homeHtml";
+import { CHROME_SETTING, zaloChatUrl } from "@/lib/chromeHtml";
+import { CONTACT_FORM_ID } from "@/lib/siteDom";
 import {
   PRODUCT_CARD_INCLUDE,
   buildCollectionHtml,
@@ -178,7 +180,14 @@ async function CollectionPage({
   cat,
   sp,
 }: {
-  cat: { id: string; name: string; kind: string; slug: string; description: string | null };
+  cat: {
+    id: string;
+    name: string;
+    kind: string;
+    slug: string;
+    description: string | null;
+    bannerImage: string | null;
+  };
   sp: Record<string, string | undefined>;
 }) {
   const selected: SelectedFilters = {
@@ -207,7 +216,7 @@ async function CollectionPage({
 
   // chỉ hiện lựa chọn lọc THỰC SỰ có sản phẩm trong danh mục này (không có bộ lọc "chết")
   const inCategory = { status: "active" as const, categories: { some: { categoryId: cat.id } } };
-  const [total, products, allTags, allTypes, usedTagRows, usedTypeRows] = await Promise.all([
+  const [total, products, allTags, allTypes, usedTagRows, usedTypeRows, slides, zaloRows] = await Promise.all([
     db.product.count({ where }),
     db.product.findMany({
       where,
@@ -220,7 +229,11 @@ async function CollectionPage({
     db.productType.findMany({ orderBy: { position: "asc" } }),
     db.productTag.findMany({ where: { product: inCategory }, select: { tagId: true }, distinct: ["tagId"] }),
     db.product.findMany({ where: { ...inCategory, productTypeId: { not: null } }, select: { productTypeId: true }, distinct: ["productTypeId"] }),
+    // Slider gắn trang này (admin: Giao diện trang chủ → Slider → "Hiện ở trang").
+    db.slider.findMany({ where: { page: cat.slug, isActive: true }, orderBy: { position: "asc" } }),
+    db.setting.findMany({ where: { key: { in: [CHROME_SETTING.ZALO, CHROME_SETTING.ZALO_PHONE] } } }),
   ]);
+  const zalo = zaloChatUrl(Object.fromEntries(zaloRows.map((r) => [r.key, r.value || ""])));
   const usedTagIds = new Set(usedTagRows.map((r) => r.tagId));
   const usedTypeIds = new Set(usedTypeRows.map((r) => r.productTypeId));
   const phanLoai = allTags.filter((t) => t.group === "phan_loai" && usedTagIds.has(t.id));
@@ -243,6 +256,9 @@ async function CollectionPage({
   const html = buildCollectionHtml({
     heading: cat.name,
     descriptionHtml: cat.description,
+    heroImage: cat.bannerImage,
+    heroActionsHtml: categoryActions(zalo),
+    sliderHtml: pageSliderHtml(slides),
     sidebarHtml: buildSidebarHtml({
       phanLoai: phanLoai.map((t) => ({ slug: t.slug, name: t.name })),
       types: types.map((t) => ({ slug: t.slug, name: t.name })),
@@ -259,7 +275,20 @@ async function CollectionPage({
         : "Không có sản phẩm phù hợp với bộ lọc — thử bỏ bớt điều kiện lọc nhé!",
   });
 
-  return <RawPage html={html} />;
+  return (
+    <>
+      <RawPage html={html} />
+      {slides.length > 0 && <HomeSwipers />}
+    </>
+  );
+}
+
+/** Nút ở đầu trang danh mục: báo giá qua Zalo (chốt đơn chính) + cuộn tới form tư vấn. */
+function categoryActions(zalo: string) {
+  const quote = zalo
+    ? `<a class="uni-btn uni-btn--primary uni-btn--chat" href="${zalo.replace(/"/g, "&quot;")}" target="_blank" rel="noopener">Báo giá qua Zalo</a>`
+    : "";
+  return `${quote}<a class="uni-btn uni-btn--outline" href="#${CONTACT_FORM_ID}">Nhận tư vấn</a>`;
 }
 
 /* ============ TRANG CHI TIẾT SẢN PHẨM ============ */
