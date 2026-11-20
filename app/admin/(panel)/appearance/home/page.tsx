@@ -295,7 +295,7 @@ export default async function AppearancePage({
                 <td className="muted">Thêm mới</td>
                 <td><UploadInput formId="sl-add" name="imageDesktop" placeholder="upload hoặc dán URL ảnh" /></td>
                 <td><UploadInput formId="sl-add" name="imageMobile" placeholder="ảnh mobile (tùy chọn)" /></td>
-                <td><input form="sl-add" name="link" placeholder="/bst-ao-lop" className="url-input" /></td>
+                <td><input form="sl-add" name="link" placeholder="/dong-phuc-ao-lop" className="url-input" /></td>
                 <td>
                   <select form="sl-add" name="page" defaultValue="">
                     {pageOptions}

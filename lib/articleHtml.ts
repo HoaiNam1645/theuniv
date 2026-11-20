@@ -1,14 +1,12 @@
-// Builder cho: trang chuyên mục bài viết, bài viết chi tiết, FAQ, liên hệ, trang tĩnh, 404.
-// Chuyên mục, FAQ, liên hệ, trang tĩnh, 404 ghép từ khối chung ở lib/layoutHtml.ts (CSS ở
+// Builder cho: bài viết chi tiết, liên hệ, trang tĩnh, 404.
+// Liên hệ, trang tĩnh, 404 ghép từ khối chung ở lib/layoutHtml.ts (CSS ở
 // public/css/page-content.css); bài viết chi tiết giữ markup theo theme gốc.
 
-import { richTuVanHtml } from "@/lib/productHtml";
-import { HOME_CRUMB, buildPostCard, esc, pageHeroHtml, type PostCardData } from "@/lib/layoutHtml";
-import { STATE_CLASS } from "@/lib/siteDom";
+import { sectionTuVan } from "@/lib/homeHtml";
+import { HOME_CRUMB, esc, pageHeroHtml, type PostCardData } from "@/lib/layoutHtml";
 
 /** Trang nội dung không có bản ghi trong DB: đường dẫn + tiêu đề cho hero, breadcrumb, metadata. */
 export const CONTENT_PAGE = {
-  FAQ: { slug: "cau-hoi-thuong-gap", title: "Câu hỏi thường gặp" },
   CONTACT: { slug: "lien-he", title: "Liên hệ" },
 } as const;
 
@@ -22,9 +20,6 @@ export const NOT_FOUND_PAGE = {
 
 /** Chữ cố định của các trang nội dung — không thuộc dữ liệu quản trị. */
 const CONTENT_TEXT = {
-  BLOG_TABS: "Chuyên mục bài viết",
-  BLOG_EMPTY: "Chuyên mục này chưa có bài viết — quay lại sau nhé!",
-  FAQ_EMPTY: "Câu hỏi thường gặp đang được cập nhật — cần giải đáp ngay, gửi thông tin ở form bên dưới nhé!",
   PAGE_EMPTY: "Nội dung trang đang được cập nhật — quay lại sau nhé!",
 } as const;
 
@@ -70,45 +65,7 @@ export function buildToc(bodyHtml: string): { body: string; tocHtml: string } {
   return { body, tocHtml: toc };
 }
 
-export type BlogTab = { slug: string; name: string };
 export type BlogCard = PostCardData;
-
-/* ============ CHUYÊN MỤC BÀI VIẾT ============ */
-export function buildBlogListHtml(opts: {
-  heading: string;
-  activeSlug: string;
-  tabs: BlogTab[];
-  cards: BlogCard[];
-  paginationHtml: string;
-  tuVanHtml: string;
-}) {
-  const tabs = opts.tabs
-    .map((t) => {
-      const active = t.slug === opts.activeSlug;
-      return `<a class="uni-blog__tab${active ? ` ${STATE_CLASS.ACTIVE}` : ""}" href="/${esc(t.slug)}"${active ? ' aria-current="page"' : ""}>${esc(t.name)}</a>`;
-    })
-    .join("\n\t\t\t");
-
-  const list = opts.cards.length
-    ? `<div class="uni-grid uni-grid--3">
-${opts.cards.map((a) => buildPostCard(a)).join("\n")}
-		</div>`
-    : `<p class="uni-content-empty">${CONTENT_TEXT.BLOG_EMPTY}</p>`;
-
-  return `		<div class="bodywrap">
-${pageHeroHtml({ title: opts.heading })}
-<section class="uni-blog">
-	<div class="uni-container">
-		<nav class="uni-blog__tabs" aria-label="${CONTENT_TEXT.BLOG_TABS}">
-			${tabs}
-		</nav>
-		${list}
-${opts.paginationHtml ? `		<div class="uni-blog__pager">${opts.paginationHtml}</div>` : ""}
-	</div>
-</section>
-${opts.tuVanHtml}
-		</div>`;
-}
 
 /* ============ BÀI VIẾT CHI TIẾT ============ */
 export function buildArticleHtml(opts: {
@@ -197,57 +154,8 @@ ${tocBlock}
 		</div>
 	</div>
 ${relatedBlock}
-${richTuVanHtml()}
+${sectionTuVan()}
 </section>
-		</div>`;
-}
-
-/* ============ FAQ ============ */
-export type FaqGroup = {
-  name: string;
-  faqs: { id: string; question: string; answer: string }[];
-};
-
-export function buildFaqHtml(groups: FaqGroup[], tuVanHtml: string) {
-  // Class theme (box-category-faqs, title-confiden-product-home, faqtitle-*, text-*, hidden)
-  // và id qs_/qsic_/qstg_/faqtitle_ là móc mở/đóng của components/ThemeJS.tsx.
-  const blocks = groups
-    .filter((g) => g.faqs.length)
-    .map(
-      (g) => `			<div class="box-category-faqs uni-faq__group">
-				<h2 class="title-confiden-product-home uni-faq__group-title">
-					<span>${esc(g.name)}</span>
-					<i class="category-faqs-fa fa fa-angle-up" aria-hidden="true"></i>
-				</h2>
-${g.faqs
-        .map(
-          (f) => `				<div class="box-article-faqs uni-faq__item">
-					<h3 class="uni-faq__heading">
-						<button class="faqtitle-hidden uni-faq__q" id="qs_${f.id}" type="button" data-faq="${f.id}">
-							<span id="faqtitle_${f.id}" class="text-white uni-faq__q-text">${esc(f.question)}</span>
-							<i id="qsic_${f.id}" class="fa fa-angle-down text-white" aria-hidden="true"></i>
-						</button>
-					</h3>
-					<div id="qstg_${f.id}" class="text-dark hidden rte faq-rte tts-content-faq uni-faq__a">
-						${f.answer}
-					</div>
-				</div>`
-        )
-        .join("\n")}
-			</div>`
-    )
-    .join("\n");
-
-  return `		<div class="bodywrap">
-${pageHeroHtml({ title: CONTENT_PAGE.FAQ.title })}
-<section class="uni-faq">
-	<div class="uni-container">
-		<div class="uni-faq__list">
-${blocks || `			<p class="uni-content-empty">${CONTENT_TEXT.FAQ_EMPTY}</p>`}
-		</div>
-	</div>
-</section>
-${tuVanHtml}
 		</div>`;
 }
 

@@ -31,7 +31,6 @@ export default async function HeaderMenuPage() {
       site_logo: str(fd.get("site_logo")),
       pcbrand_label: str(fd.get("pcbrand_label")),
       pcbrand_url: str(fd.get("pcbrand_url")),
-      [CHROME_SETTING.TOPBAR_ZALO]: str(fd.get(CHROME_SETTING.TOPBAR_ZALO)),
       [CHROME_SETTING.TOPBAR_ADDRESS]: str(fd.get(CHROME_SETTING.TOPBAR_ADDRESS)),
     });
     await flash("Đã lưu thương hiệu");
@@ -110,10 +109,6 @@ export default async function HeaderMenuPage() {
           <label>
             Logo (đường dẫn ảnh)
             <UploadInput name="site_logo" defaultValue={s.site_logo || ""} className="" />
-          </label>
-          <label>
-            Thanh trên cùng — dòng Zalo (bấm mở chat Zalo; để trống = chữ mặc định)
-            <input name={CHROME_SETTING.TOPBAR_ZALO} defaultValue={s[CHROME_SETTING.TOPBAR_ZALO] || ""} placeholder="Đặt hàng liên hệ zalo: 0399.259.155" />
           </label>
           <label>
             Thanh trên cùng — dòng địa chỉ (bấm mở Google Maps theo địa chỉ ở Cài đặt)

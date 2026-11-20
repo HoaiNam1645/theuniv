@@ -1,8 +1,10 @@
 // Trang chi tiết sản phẩm — dựng đúng cấu trúc theme gốc:
 // cột trái: cột thumbnail dính + dãy ảnh lớn (≥768px) + gallery swiper (<768px)
 // cột phải: panel sticky (tên, thông số, nút NHẬN TƯ VẤN cuộn xuống form trong trang)
-// dưới: slider "THIẾT KẾ TƯƠNG TỰ" + form tư vấn đầy đủ.
+// dưới: slider "THIẾT KẾ TƯƠNG TỰ" + form tư vấn (cùng form với trang chủ, lib/homeHtml.ts sectionTuVan).
 // Bố cục (vị trí dính, mốc ảnh, vùng chạm) ở public/css/page-product.css — markup không mang style vị trí.
+
+import { sectionTuVan } from "@/lib/homeHtml";
 
 const esc = (s: string | null | undefined) =>
   (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -20,37 +22,6 @@ export type RelatedProduct = {
   slug: string;
   images: { url: string }[];
 };
-
-// Form tư vấn bản đầy đủ (trang sản phẩm/bài viết) — nhiều trường hơn form trang chủ
-export function richTuVanHtml() {
-  return `		<div class="box-tu-van" id="contact-form-scroll">
-			<section class="section_nhan_tu_van">
-				<div class="container">
-					<div class="title_white_new">
-						<h4 class="title-confiden-product-home" style="margin-top: 44px;">NHẬN TƯ VẤN MIỄN PHÍ</h4>
-						<p class="line-bottom-title"></p>
-					</div>
-					<div id="pagelogin">
-						<form method="post" action="/postcontact" id="contact" accept-charset="UTF-8"><input name="FormType" type="hidden" value="contact"/><input name="utf8" type="hidden" value="true"/>
-						<div class="group_contact">
-							<div class="row">
-								<div class="col-lg-6 col-md-6 col-sm-12 col-12"><input placeholder="Họ và tên" type="text" class="form-control  form-control-lg" required value="" name="contact[Name]"></div>
-								<div class="col-lg-6 col-md-6 col-sm-12 col-12"><input type="text" placeholder="Đơn vị (lớp, trường, công ty)" name="contact[Đơn vị]" class="form-control form-control-lg"></div>
-								<div class="col-lg-6 col-md-6 col-sm-12 col-12 d-none"><input placeholder="Email" type="email" id="email1" class="form-control form-control-lg" value="default@gmail.com" name="contact[email]"></div>
-								<div class="col-lg-6 col-md-6 col-sm-12 col-12"><input type="number" placeholder="Điện thoại*" name="contact[phone]" class="form-control form-control-lg" required></div>
-								<div class="col-lg-6 col-md-6 col-sm-12 col-12"><input type="text" placeholder="Ngày nhận hàng" name="contact[Ngày nhận hàng]" class="form-control form-control-lg"></div>
-								<div class="col-lg-6 col-md-6 col-sm-12 col-12"><input type="text" placeholder="Sản phẩm" name="contact[Sản phẩm]" class="form-control form-control-lg"></div>
-								<div class="col-lg-6 col-md-6 col-sm-12 col-12"><input type="text" placeholder="Số lượng" name="contact[Số lượng]" class="form-control form-control-lg"></div>
-							</div>
-							<textarea placeholder="Nội dung" name="contact[body]" id="comment" class="form-control content-area form-control-lg d-none" rows="5" Required>Nội dung mặc định</textarea>
-							<button type="submit" class="btn-lienhe">Gửi thông tin ngay</button>
-						</div>
-						</form>
-					</div>
-				</div>
-			</section>
-		</div>`;
-}
 
 export function buildRelatedSlide(p: RelatedProduct) {
   const img1 = p.images[0]?.url || "";
@@ -212,7 +183,7 @@ ${specRows}
 
 ${relatedBlock}
 
-${richTuVanHtml()}
+${sectionTuVan()}
 	</section>
 </div>`;
 }

@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import Icon from "@/components/admin/Icon";
 import UploadInput from "@/components/admin/UploadInput";
 import { flash } from "@/lib/flash";
+import { FOOTER_SOCIAL_DEFAULT } from "@/lib/chromeHtml";
 
 const str = (v: FormDataEntryValue | null) => String(v || "").trim();
 
@@ -10,8 +11,6 @@ const FIELDS = [
   "company_name", "company_mst", "address", "hotline", "email", "map_embed_url",
   "footer_col1_title", "footer_col1_facebook", "footer_col1_instagram", "footer_col1_mail",
   "footer_col1_fanpage_img", "footer_col1_fanpage_link",
-  "footer_col2_title", "footer_col2_facebook", "footer_col2_instagram", "footer_col2_mail",
-  "footer_col2_fanpage_img", "footer_col2_fanpage_link",
 ];
 
 export default async function FooterPage() {
@@ -35,7 +34,7 @@ export default async function FooterPage() {
       <div className="page-head">
         <div>
           <h1>Footer</h1>
-          <p>Thông tin công ty, bản đồ và 2 cột mạng xã hội ở chân trang.</p>
+          <p>Thông tin công ty, bản đồ và cột mạng xã hội ở chân trang.</p>
         </div>
         <a className="btn-outline" href="/" target="_blank" rel="noreferrer">
           <Icon name="external" size={15} /> Xem website
@@ -73,21 +72,22 @@ export default async function FooterPage() {
           </div>
         </div>
 
-        {[1, 2].map((n) => (
+        {[1].map((n) => (
           <div className="panel" style={{ padding: 18 }} key={n}>
-            <h3 className="panel-mini-title">Cột mạng xã hội {n}</h3>
+            <h3 className="panel-mini-title">Cột mạng xã hội</h3>
+            <p className="muted">Ô để trống thì website dùng giá trị mặc định (chữ mờ trong ô).</p>
             <div className="settings-grid">
               <label>
                 Tiêu đề cột
-                <input name={`footer_col${n}_title`} defaultValue={s[`footer_col${n}_title`] || ""} />
+                <input name={`footer_col${n}_title`} defaultValue={s[`footer_col${n}_title`] || ""} placeholder={FOOTER_SOCIAL_DEFAULT.TITLE} />
               </label>
               <label>
                 Facebook
-                <input name={`footer_col${n}_facebook`} defaultValue={s[`footer_col${n}_facebook`] || ""} className="url-input" />
+                <input name={`footer_col${n}_facebook`} defaultValue={s[`footer_col${n}_facebook`] || ""} placeholder={FOOTER_SOCIAL_DEFAULT.FACEBOOK} className="url-input" />
               </label>
               <label>
                 Instagram
-                <input name={`footer_col${n}_instagram`} defaultValue={s[`footer_col${n}_instagram`] || ""} className="url-input" />
+                <input name={`footer_col${n}_instagram`} defaultValue={s[`footer_col${n}_instagram`] || ""} placeholder={FOOTER_SOCIAL_DEFAULT.INSTAGRAM} className="url-input" />
               </label>
               <label>
                 Email nhận thư (nút mail)

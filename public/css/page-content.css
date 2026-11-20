@@ -1,8 +1,8 @@
-/* Bố cục trang nội dung: chuyên mục bài viết, liên hệ, trang tĩnh, FAQ, 404 (lib/articleHtml.ts);
+/* Bố cục trang nội dung: liên hệ, trang tĩnh, 404 (lib/articleHtml.ts);
    cuối file: chỗ vá markup theme của bài viết chi tiết và trang snapshot (data/pages/*.json).
    Khung, thẻ bài viết và khối dùng chung ở site-layout.css; mốc màn hình ghi ở đầu file đó. */
 
-/* ---------- Ô báo trống (chuyên mục chưa có bài, FAQ chưa có câu hỏi, trang chưa có nội dung) ---------- */
+/* ---------- Ô báo trống (trang chưa có nội dung) ---------- */
 .uni-content-empty {
   max-width: 780px;
   margin: 0 auto;
@@ -14,31 +14,6 @@
   border: 1px dashed var(--uni-line-strong);
   border-radius: var(--uni-radius-md);
 }
-
-/* ---------- Chuyên mục bài viết: dải chuyên mục → lưới thẻ → phân trang ---------- */
-.uni-blog { padding-top: 36px; }
-.uni-blog__tabs {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 28px;
-}
-.uni-blog__tab {
-  padding: 8px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--uni-text);
-  border: 1px solid var(--uni-line-strong);
-  border-radius: var(--uni-radius-full);
-  text-decoration: none;
-  transition: background-color var(--uni-ease-fast), border-color var(--uni-ease-fast), color var(--uni-ease-fast);
-}
-.uni-blog__tab:hover { color: var(--mainColor); border-color: var(--mainColor); text-decoration: none; }
-.uni-blog__tab.is-active,
-.uni-blog__tab.is-active:hover { color: var(--textColor); background: var(--mainColor); border-color: var(--mainColor); }
-.uni-blog__pager { margin-top: 40px; }
 
 /* ---------- Liên hệ: thẻ thông tin | thẻ form ---------- */
 .uni-contact {
@@ -140,86 +115,6 @@
   border-radius: var(--uni-radius-lg);
 }
 
-/* ---------- FAQ: nhóm câu hỏi → danh sách thẻ mở/đóng ----------
-   Class theme (box-category-faqs, faqtitle-*, text-*) giữ cho ThemeJS; style_page.scss.css
-   đặt cỡ chữ tiêu đề nhóm bằng !important nên chỗ đó buộc phải !important theo. */
-.uni-faq { padding-top: var(--uni-section-y); }
-.uni-faq__list {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  max-width: 780px;
-  margin: 0 auto;
-}
-.uni-faq .uni-faq__group { display: flex; flex-direction: column; gap: 12px; margin: 0; }
-.uni-faq .uni-faq__group .uni-faq__group-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 0 0 4px;
-  padding: 0 0 12px;
-  font-size: 20px !important;
-  font-weight: 800;
-  line-height: 1.35;
-  text-align: left;
-  color: var(--uni-text);
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--uni-line);
-}
-.uni-faq .uni-faq__group-title .category-faqs-fa { position: static; margin: 0; color: var(--mainColor); }
-/* Mũi tên theme là mask ảnh /theme/down-navigate.png — ảnh không có trong public/ nên vẽ bằng
-   viền. Theme xoay .fa-angle-up 180deg (!important) nên chỉ cần vẽ chiều xuống. */
-.uni-faq .uni-faq__group .fa-angle-up,
-.uni-faq .uni-faq__group .fa-angle-down {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  min-width: 0;
-  min-height: 0;
-  background: none;
-  -webkit-mask: none;
-  mask: none;
-}
-.uni-faq .uni-faq__group .fa-angle-up::before,
-.uni-faq .uni-faq__group .fa-angle-down::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: translateY(-2px) rotate(45deg);
-}
-.uni-faq .uni-faq__item {
-  overflow: hidden;
-  background: var(--uni-surface);
-  border: 1px solid var(--uni-line);
-  border-radius: var(--uni-radius-md);
-}
-.uni-faq .uni-faq__heading { margin: 0; font-size: inherit; }
-.uni-faq .uni-faq__item .uni-faq__q {
-  display: flex;
-  gap: 16px;
-  width: 100%;
-  min-height: 0;
-  padding: 20px 24px;
-  text-align: left;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-}
-/* ThemeJS gắn faqtitle-show khi mở: cả thẻ chuyển nền trắng, chữ tối (đúng hành vi theme). */
-.uni-faq .uni-faq__item .uni-faq__q.faqtitle-show,
-.uni-faq .uni-faq__a { background: #fff; }
-.uni-faq .uni-faq__q-text { font-size: 16px; font-weight: 700; line-height: 1.5; }
-.uni-faq .uni-faq__q .fa { flex-shrink: 0; margin: 0; }
-.uni-faq .uni-faq__a { padding: 0 24px 20px; font-size: 15px; line-height: 1.65; }
-.uni-faq .uni-faq__a.tts-content-faq p { margin: 0 0 10px; padding: 0; }
-.uni-faq .uni-faq__a.tts-content-faq p:last-child { margin-bottom: 0; }
-
 /* ---------- 404: mã lỗi → nút về trang chủ (dưới page hero) ---------- */
 .uni-not-found {
   display: flex;
@@ -238,19 +133,10 @@
 
 @media (max-width: 768px) {
   .uni-content-empty { padding: 32px 16px; font-size: 15px; }
-  .uni-blog { padding-top: 24px; }
-  .uni-blog__tabs { gap: 6px; margin-bottom: 20px; }
-  .uni-blog__tab { padding: 7px 14px; font-size: 13px; }
-  .uni-blog__pager { margin-top: 28px; }
   .uni-contact { grid-template-columns: 1fr; gap: 24px; }
   .uni-contact__card { padding: 24px 20px; }
   .uni-contact__title { font-size: 21px; }
   .uni-page-body.content-page { padding: 28px 20px; }
-  .uni-faq__list { gap: 32px; }
-  .uni-faq .uni-faq__group .uni-faq__group-title { font-size: 18px !important; }
-  .uni-faq .uni-faq__item .uni-faq__q { padding: 16px 18px; }
-  .uni-faq .uni-faq__q-text { font-size: 15px; }
-  .uni-faq .uni-faq__a { padding: 0 18px 16px; }
   .uni-not-found__code { font-size: 72px; }
 }
 
@@ -269,7 +155,6 @@
 
 /* ---------- Vùng chạm ≥44px trên màn chạm (cùng mốc với khối cuối site-layout.css) ---------- */
 @media (max-width: 1024px), (hover: none) {
-  .uni-blog__tab { display: inline-flex; align-items: center; min-height: var(--uni-tap); }
   .uni-contact__value a { display: inline-flex; align-items: center; min-height: var(--uni-tap); }
   /* Mục lục bài viết (markup theme): thanh mở/đóng và từng link mục. */
   .title-goto-wrapper { min-height: var(--uni-tap); }

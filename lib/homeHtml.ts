@@ -13,10 +13,10 @@ import {
   sectionText,
   type HomeLayout,
 } from "./homeSections";
-import { buildPostCard, esc, sectionHeadHtml, type PostCardData } from "./layoutHtml";
+import { buildPostCard, consultFormHtml, esc, sectionHeadHtml, type PostCardData } from "./layoutHtml";
 import { excerptFrom } from "./seo";
 import { CONTACT_FORM_ID, HOME_SLIDER_CLASS, SLIDE_MOBILE_MEDIA } from "./siteDom";
-import { tiktokPlayerUrl } from "./tiktok";
+import { tiktokPlayerUrl, type TiktokVideo } from "./tiktok";
 
 type Slider = { title: string | null; imageDesktop: string; imageMobile: string | null; link: string | null };
 type Banner = { slot: string; image: string; link: string | null; buttonText: string | null };
@@ -29,7 +29,6 @@ type HomeContact = { zalo: string; phone: string };
 
 /** Đích cố định của các liên kết trên trang chủ (không thuộc dữ liệu quản trị). */
 const HOME_HREF = {
-  BLOG: "/tin-tuc-ao-lop",
   PHOI: "/bang-mau-vai",
 } as const;
 
@@ -53,7 +52,9 @@ const toPath = (slug: string) => "/" + slug.replace(/^\//, "");
 function linkBox(link: string | null, cls: string, inner: string, title?: string | null) {
   if (!link) return `<div class="${cls}">${inner}</div>`;
   const tip = title ? ` title="${esc(title)}"` : "";
-  return `<a class="${cls}" href="${esc(link)}"${tip}>${inner}</a>`;
+  // Link ra trang khác (logo khách hàng trỏ tới web của trường, ngân hàng...) mở tab mới để khách không rời site.
+  const external = /^https?:\/\//i.test(link) ? ' target="_blank" rel="noopener"' : "";
+  return `<a class="${cls}" href="${esc(link)}"${tip}${external}>${inner}</a>`;
 }
 
 /** Khung chung một section trang chủ: khoảng cách dọc + container. */
@@ -251,7 +252,8 @@ ${cards}
 
 function sectionBlog(posts: PostCardData[], txt: (k: string) => string) {
   if (!posts.length) return "";
-  return homeSection(`${sectionHeadHtml({ title: txt("heading"), href: HOME_HREF.BLOG, tag: "h4" })}
+  // Không còn trang danh sách blog (đã bỏ khỏi menu và route) nên tiêu đề không kèm link "xem tất cả".
+  return homeSection(`${sectionHeadHtml({ title: txt("heading"), tag: "h4" })}
 <div class="uni-grid uni-grid--3">
 ${posts.map((p) => buildPostCard(p)).join("\n")}
 </div>`);
@@ -285,7 +287,7 @@ const SERVICE_ICON: Record<(typeof SERVICE_KEYS)[number], string> = {
 const icon = (paths: string) =>
   `<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 
-/** Banner tràn ngang: 2 ô ảnh khai trong admin + các slider chọn "Trang chủ". */
+/** Banner tràn ngang: ô ảnh khai trong admin + các slider chọn "Trang chủ". */
 function sectionHero(bySlot: Map<string, Banner>, homeSliders: Slider[]) {
   const fromSlots: Slider[] = [];
   for (let n = 1; n <= HERO_SLOT_COUNT; n++) {
@@ -322,43 +324,46 @@ function sectionMarquee(txt: (k: string) => string) {
 </section>`;
 }
 
-function sectionIntro(txt: (k: string) => string, contact: HomeContact, tiktokId: string | null) {
+/** Icon điện thoại của nút "Gọi xưởng" (nét, ăn theo màu chữ). */
+const PHONE_SVG = `<svg class="home-intro__call-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
+
+function sectionIntro(txt: (k: string) => string, contact: HomeContact, tiktok: TiktokVideo | null) {
   const points = ["point1", "point2", "point3"]
     .map((k) => txt(k))
     .filter(Boolean)
     .map((p) => `<li>${esc(p)}</li>`)
     .join("");
   const tel = contact.phone.replace(/[^\d+]/g, "");
-  const actions = [
-    contact.zalo
-      ? `<a class="uni-btn uni-btn--primary uni-btn--chat" href="${esc(contact.zalo)}" target="_blank" rel="noopener">${esc(txt("ctaQuote"))}</a>`
-      : "",
-    tel ? `<a class="uni-btn uni-btn--outline" href="tel:${esc(tel)}">${esc(txt("ctaCall"))} ${esc(contact.phone)}</a>` : "",
-  ].join("");
+  // Một nút duy nhất: gọi thẳng xưởng. Số điện thoại nằm trong title (rê chuột / trình đọc màn hình).
+  const call = tel
+    ? `<a class="home-intro__call" href="tel:${esc(tel)}" title="${esc(contact.phone)}">${PHONE_SVG}<span>${esc(txt("ctaCall"))}</span></a>`
+    : "";
 
   const videoUrl = txt("tiktok");
   const videoLink = videoUrl
     ? `<a class="home-video__link" href="${esc(videoUrl)}" target="_blank" rel="noopener">${esc(txt("videoLink"))}</a>`
     : "";
-  const video = tiktokId
+  const handle = tiktok?.handle ? `<span class="home-video__handle">@${esc(tiktok.handle)}</span>` : "";
+  const caption = handle || videoLink ? `<div class="home-video__caption">${handle}${videoLink}</div>` : "";
+  const video = tiktok
     ? `<div class="home-video">
 			<div class="home-video__frame">
-				<iframe src="${esc(tiktokPlayerUrl(tiktokId))}" title="${esc(txt("heading"))} — video" loading="lazy" allow="encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+				<iframe src="${esc(tiktokPlayerUrl(tiktok.id))}" title="${esc(txt("heading"))} — video" loading="lazy" allow="encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
 			</div>
-			${videoLink}
+			${caption}
 		</div>`
-    : videoLink
-      ? `<div class="home-video">${videoLink}</div>`
+    : caption
+      ? `<div class="home-video">${caption}</div>`
       : "";
 
   return `<section class="uni-section home-section home-intro">
 	<div class="uni-container home-intro__grid${video ? "" : " home-intro__grid--solo"}">
 		<div class="home-intro__text">
-			<p class="home-eyebrow">${esc(txt("eyebrow"))}</p>
+			<p class="home-intro__eyebrow">${esc(txt("eyebrow"))}</p>
 			<h2 class="home-intro__title">${esc(txt("heading"))}</h2>
 			<p class="home-intro__body">${esc(txt("body"))}</p>
-			${points ? `<ul class="home-checks">${points}</ul>` : ""}
-			${actions ? `<div class="home-intro__actions">${actions}</div>` : ""}
+			${points ? `<ul class="home-intro__points">${points}</ul>` : ""}
+			${call}
 		</div>
 		${video}
 	</div>
@@ -479,21 +484,9 @@ export function sectionTuVan(
   txt: (k: string) => string = (k) => sectionText(defaultHomeLayout(), "tuvan", k),
 ) {
   return `<section class="uni-cta" id="${CONTACT_FORM_ID}">
-	<div class="uni-container">
-		<div class="uni-cta__box">
-			<h4 class="uni-cta__title">${esc(txt("heading"))}</h4>
-			<form method="post" action="/postcontact" id="contact" class="uni-cta__form" accept-charset="UTF-8"><input name="FormType" type="hidden" value="contact"/><input name="utf8" type="hidden" value="true"/><input type="hidden" name="Token" />
-				<input placeholder="Họ và tên" type="text" class="form-control" required value="" name="contact[Name]">
-				<input type="text" placeholder="Đơn vị (lớp, trường, công ty)" name="contact[Đơn vị]" class="form-control d-none">
-				<input placeholder="Email" type="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$" required id="email1"
-					   class="form-control d-none" value="default@gmail.com" name="contact[email]">
-				<input type="number" placeholder="Điện thoại*" name="contact[phone]" class="form-control" required>
-				<input type="text" placeholder="Sản phẩm" name="contact[Sản phẩm]" class="form-control">
-				<input type="text" placeholder="" name="contact[Email]" class="form-control d-none" value="emaildefaut@gmail.com">
-				<textarea placeholder="Nội dung" name="contact[body]" id="comment" class="form-control d-none" rows="5" Required>Nội dung mặc định</textarea>
-				<button type="submit" class="uni-btn uni-btn--primary uni-btn--block">${esc(txt("submit"))}</button>
-			</form>
-		</div>
+	<div class="uni-container uni-cta__inner">
+		<h2 class="uni-cta__title">${esc(txt("heading"))}</h2>
+		<div class="uni-cta__card">${consultFormHtml(txt("submit"))}</div>
 	</div>
 </section>`;
 }
@@ -509,8 +502,8 @@ export function buildHomeHtml(
     /** Danh mục 4 lĩnh vực (SECTOR_SLUGS). */
     sectors: Sector[];
     contact: HomeContact;
-    /** ID video TikTok đã tách từ link trong admin (lib/tiktok.ts); null = chỉ hiện link. */
-    tiktokId: string | null;
+    /** Video TikTok đã tách từ link trong admin (lib/tiktok.ts); null = chỉ hiện link. */
+    tiktok: TiktokVideo | null;
   },
   layout: HomeLayout = defaultHomeLayout(),
 ) {
@@ -522,7 +515,7 @@ export function buildHomeHtml(
   const render: Record<string, () => string> = {
     hero: () => sectionHero(bySlot, data.sliders),
     marquee: () => sectionMarquee((k) => sectionText(layout, "marquee", k)),
-    intro: () => sectionIntro((k) => sectionText(layout, "intro", k), data.contact, data.tiktokId),
+    intro: () => sectionIntro((k) => sectionText(layout, "intro", k), data.contact, data.tiktok),
     services: () => sectionServices((k) => sectionText(layout, "services", k)),
     sectors: () => sectionSectors(data.sectors, (k) => sectionText(layout, "sectors", k)),
     phoi: () => sectionPhoi(bySlot, (k) => sectionText(layout, "phoi", k)),

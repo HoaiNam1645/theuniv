@@ -7,12 +7,26 @@
 const VIDEO_ID_RE = /\/video\/(\d{8,})/;
 const BARE_ID_RE = /^(\d{8,})$/;
 const SHORT_LINK_RE = /^https:\/\/(vt|vm)\.tiktok\.com\/[\w-]+\/?$/;
+const HANDLE_RE = /\/@([\w.]+)/;
 
-/** ID video từ link TikTok; không nhận ra được thì null (khối chỉ hiện link, không có player). */
-export async function tiktokVideoId(link: string): Promise<string | null> {
+export type TiktokVideo = {
+  id: string;
+  /** Tên kênh (không có @) đọc từ link; link chỉ có ID thì null. */
+  handle: string | null;
+};
+
+const fromFullLink = (url: string): TiktokVideo | null => {
+  const id = url.match(VIDEO_ID_RE)?.[1];
+  return id ? { id, handle: url.match(HANDLE_RE)?.[1] ?? null } : null;
+};
+
+/** Video từ link TikTok; không nhận ra được thì null (khối chỉ hiện link, không có player). */
+export async function tiktokVideo(link: string): Promise<TiktokVideo | null> {
   const url = link.trim();
-  const direct = url.match(VIDEO_ID_RE) || url.match(BARE_ID_RE);
-  if (direct) return direct[1];
+  const full = fromFullLink(url);
+  if (full) return full;
+  const bare = url.match(BARE_ID_RE);
+  if (bare) return { id: bare[1], handle: null };
   if (!SHORT_LINK_RE.test(url)) return null;
   try {
     // Link rút gọn trả 301 tới link đầy đủ. Kết quả cache 1 ngày (fetch cache của Next):
@@ -23,7 +37,7 @@ export async function tiktokVideoId(link: string): Promise<string | null> {
       next: { revalidate: 86400 },
       signal: AbortSignal.timeout(4000),
     });
-    return res.headers.get("location")?.match(VIDEO_ID_RE)?.[1] ?? null;
+    return fromFullLink(res.headers.get("location") || "");
   } catch {
     return null;
   }

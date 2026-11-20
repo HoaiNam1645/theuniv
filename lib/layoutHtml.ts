@@ -107,3 +107,31 @@ export function buildPostCard(p: PostCardData, badge?: string | null) {
 	</div>
 </article>`;
 }
+
+/** Chữ cố định của form nhận tư vấn — không thuộc dữ liệu quản trị. */
+export const CONSULT_TEXT = {
+  TITLE: "Nhận tư vấn miễn phí",
+  SUBMIT: "Gửi thông tin ngay",
+  NAME: "Họ và tên",
+  PHONE: "Điện thoại*",
+  PHONE_LABEL: "Điện thoại",
+  PRODUCT: "Sản phẩm",
+} as const;
+
+/**
+ * Form nhận tư vấn: khối cuối trang (lib/homeHtml.ts sectionTuVan) và popup của nút nổi
+ * (lib/chromeHtml.ts) dùng chung. components/ThemeJS.tsx gửi form về /api/leads, nhận form theo
+ * `action="/postcontact"` và đọc ô theo `name` — giữ nguyên hai thứ này. Không đặt id cho ô: một
+ * trang có thể có cả form cuối trang lẫn form trong popup.
+ */
+export function consultFormHtml(submit: string = CONSULT_TEXT.SUBMIT, autofocus = false) {
+  const input = (attrs: string, placeholder: string, label = placeholder) =>
+    `<input class="uni-consult-form__input" ${attrs} placeholder="${esc(placeholder)}" aria-label="${esc(label)}">`;
+  return `<form method="post" action="/postcontact" class="uni-consult-form" accept-charset="UTF-8">
+	<input name="FormType" type="hidden" value="contact"/><input name="utf8" type="hidden" value="true"/>
+	${input(`type="text" name="contact[Name]" autocomplete="name" required${autofocus ? " autofocus" : ""}`, CONSULT_TEXT.NAME)}
+	${input('type="tel" name="contact[phone]" inputmode="tel" autocomplete="tel" required', CONSULT_TEXT.PHONE, CONSULT_TEXT.PHONE_LABEL)}
+	${input('type="text" name="contact[Sản phẩm]"', CONSULT_TEXT.PRODUCT)}
+	<button type="submit" class="uni-consult-form__submit">${esc(submit)}</button>
+</form>`;
+}

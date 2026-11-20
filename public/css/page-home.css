@@ -302,64 +302,106 @@ a.home-logo:hover { border-color: var(--c-primary); }
   .home-marquee__run[aria-hidden] { display: none; }
 }
 
-/* ---------- Giới thiệu xưởng + video ---------- */
+/* ---------- Giới thiệu xưởng + video ----------
+   Khối nền xám ấm: tiêu đề chữ hẹp cỡ lớn (Barlow Condensed, nạp ở app/layout.tsx), ba cam kết có ô
+   vuông vàng, một nút vàng "Gọi xưởng"; bên phải video TikTok dọc kèm dòng tên kênh. */
+.home-intro {
+  --intro-bg: #e7e6e3;
+  --intro-ink: #242528;
+  --intro-muted: #45464a;
+  --intro-eyebrow: #765a12;
+  --intro-bullet: #d9a92b;
+  --intro-cta: #e6b93e;
+  padding-block: clamp(64px, 7vw, 104px);
+  background: var(--intro-bg);
+}
+.home-section.home-intro,
+.home-section + .home-section.home-intro,
+.home-section.home-intro + .home-section { border-top: 0; }
 .home-intro__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: 64px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 330px);
+  gap: clamp(40px, 8vw, 160px);
   align-items: center;
 }
-.home-intro__grid--solo { grid-template-columns: minmax(0, 760px); justify-content: center; }
-.home-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0 0 14px;
-  font-size: 13px;
+.home-intro__grid--solo { grid-template-columns: minmax(0, 760px); }
+.home-intro__eyebrow {
+  margin: 0 0 18px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  line-height: 1.4;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--c-primary);
+  color: var(--intro-eyebrow);
 }
-.home-eyebrow::before { content: ""; width: 32px; height: 2px; flex-shrink: 0; background: var(--c-gold); }
 .home-intro__title {
-  margin: 0 0 20px;
-  font-size: 42px;
-  font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
-  color: var(--c-primary);
+  margin: 0 0 28px;
+  font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(46px, 7.2vw, 104px);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: var(--intro-ink);
 }
-.home-intro__body { margin: 0 0 24px; font-size: 17px; line-height: 1.7; color: var(--uni-text-muted); }
-.home-checks { display: grid; gap: 12px; margin: 0 0 32px; padding: 0; list-style: none; }
-.home-checks li { position: relative; padding-left: 34px; font-size: 16px; font-weight: 700; line-height: 22px; color: var(--uni-text); }
-/* Ô vuông xanh + dấu tích trắng, vẽ bằng viền — không cần ảnh icon. */
-.home-checks li::before { content: ""; position: absolute; left: 0; top: 1px; width: 20px; height: 20px; background: var(--c-primary); }
-.home-checks li::after {
+.home-intro__body {
+  max-width: 600px;
+  margin: 0 0 32px;
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--intro-muted);
+}
+.home-intro__points { display: grid; gap: 12px; margin: 0 0 40px; padding: 0; list-style: none; }
+.home-intro__points li {
+  position: relative;
+  padding-left: 28px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--intro-ink);
+}
+.home-intro__points li::before {
   content: "";
   position: absolute;
-  left: 7px;
-  top: 4px;
-  width: 6px;
-  height: 11px;
-  border-right: 2px solid var(--c-on-primary);
-  border-bottom: 2px solid var(--c-on-primary);
-  transform: rotate(45deg);
+  left: 0;
+  top: calc(0.75em - 4px);
+  width: 8px;
+  height: 8px;
+  background: var(--intro-bullet);
 }
-.home-intro__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.home-intro__call {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  padding: 0 30px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--intro-ink);
+  background: var(--intro-cta);
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+.home-intro__call:hover,
+.home-intro__call:focus-visible { color: var(--intro-ink); background: #dcac2c; text-decoration: none; }
+.home-intro__call:active { transform: translateY(1px); }
+.home-intro__call-icon { flex-shrink: 0; }
 
-.home-video { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.home-video { display: flex; flex-direction: column; gap: 14px; width: 100%; }
 .home-video__frame {
   width: 100%;
-  max-width: 340px;
   aspect-ratio: 9 / 16;
+  overflow: hidden;
   background: var(--c-ink);
-  border: 1px solid var(--uni-line);
+  border-radius: 6px;
 }
 .home-video__frame iframe { display: block; width: 100%; height: 100%; border: 0; }
-.home-video__link { font-size: 14px; font-weight: 700; color: var(--c-primary); text-decoration: underline; }
-.home-video__link::after { content: " ↗"; }
-.home-video__link:hover { color: var(--c-primary-dark); }
+.home-video__caption { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.home-video__handle { font-size: 14px; color: var(--intro-muted); }
+.home-video__link { margin-left: auto; font-size: 14px; font-weight: 700; color: var(--intro-ink); text-decoration: none; }
+.home-video__link::after { content: " \2197"; }
+.home-video__link:hover { color: var(--intro-ink); text-decoration: underline; }
 
 /* ---------- Năng lực sản xuất: lưới 6 ô, kẻ 1px bằng khe lưới ---------- */
 .home-services {
@@ -488,11 +530,6 @@ a.home-logo:hover { border-color: var(--c-primary); }
 .home-step__title { margin: 0 0 8px; font-size: 18px; font-weight: 700; line-height: 1.3; text-transform: none; color: var(--c-on-primary); }
 .home-step__desc { margin: 0; font-size: 14.5px; line-height: 1.6; color: rgba(255, 255, 255, 0.85); }
 
-@media (max-width: 1199px) {
-  .home-intro__grid { gap: 40px; }
-  .home-intro__title { font-size: 36px; }
-}
-
 @media (max-width: 1024px) {
   .home-services { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .home-sectors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -512,15 +549,16 @@ a.home-logo:hover { border-color: var(--c-primary); }
 
 @media (max-width: 900px) {
   .home-intro__grid { grid-template-columns: 1fr; }
-  .home-video__frame { max-width: 320px; }
+  .home-video { max-width: 330px; }
 }
 
 @media (max-width: 768px) {
   .home-marquee__item { padding: 12px 0; font-size: 13px; }
   .home-marquee__item::after { margin: 0 18px; }
-  .home-intro__title { font-size: 30px; }
+  .home-intro__eyebrow { font-size: 12px; letter-spacing: 0.1em; }
   .home-intro__body { font-size: 16px; }
-  .home-intro__actions .uni-btn { flex: 1 1 auto; }
+  .home-intro__points li { font-size: 16px; }
+  .home-intro__call { width: 100%; justify-content: center; }
   .home-service { gap: 10px; padding: 22px 10px; }
   .home-service__icon svg { width: 32px; height: 32px; }
   .home-service__name { font-size: 12.5px; }

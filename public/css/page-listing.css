@@ -10,8 +10,7 @@
 /* ---------- Khung trang: thanh công cụ → lưới → phân trang ---------- */
 .uni-listing { padding: 36px 0 var(--uni-section-y); }
 /* Khối tư vấn ngay sau lưới: một khoảng cách, không cộng dồn padding hai section. */
-.uni-listing:has(+ .uni-cta) { padding-bottom: var(--uni-head-gap); }
-.uni-listing + .uni-cta { padding-top: 0; }
+.uni-listing:has(+ .uni-cta) { padding-bottom: var(--uni-section-y); }
 
 .uni-listing__bar {
   display: flex;

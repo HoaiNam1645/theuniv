@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { DRAWER, FILTER, NAV_ITEM_ATTR, NAV_LINK_ATTR, STATE_CLASS } from "@/lib/siteDom";
+import { CONSULT, DRAWER, FILTER, HEADER_SEARCH, NAV_ITEM_ATTR, NAV_LINK_ATTR, STATE_CLASS } from "@/lib/siteDom";
+import { initNavGlass } from "@/lib/navGlass";
 
 /** Đường dẫn bỏ dấu "/" cuối, để "/tin-tuc/" và "/tin-tuc" là cùng một trang. */
 const normPath = (p: string) => p.replace(/\/+$/, "") || "/";
@@ -30,9 +31,41 @@ export default function ThemeJS() {
       a.classList.add(STATE_CLASS.ACTIVE);
       a.closest(`[${NAV_ITEM_ATTR}]`)?.classList.add(STATE_CLASS.ACTIVE);
     });
+    // Sau khi đã biết mục đang xem: viên kính của menu ngang đậu vào đúng mục đó.
+    const disposeNavGlass = initNavGlass();
+
+    // Ô tìm kiếm trên header: bấm kính lúp mở khung nhập, bấm ra ngoài hoặc Esc thì đóng.
+    const searchWrap = document.querySelector(`.${HEADER_SEARCH.WRAP_CLASS}`);
+    const setSearch = (open: boolean) => {
+      if (!searchWrap) return;
+      searchWrap.classList.toggle(STATE_CLASS.OPEN, open);
+      searchWrap.querySelector(`[${HEADER_SEARCH.TOGGLE_ATTR}]`)?.setAttribute("aria-expanded", String(open));
+      if (open) searchWrap.querySelector<HTMLInputElement>("input[name=query]")?.focus();
+    };
+
+    // Popup form tư vấn (nút nổi). <dialog> modal tự lo Esc và khoá focus; bấm ra nền mờ thì đóng.
+    const consult = document.getElementById(CONSULT.DIALOG_ID) as HTMLDialogElement | null;
 
     const onClick = (e: MouseEvent) => {
       const t = e.target as HTMLElement;
+
+      if (consult && t.closest(`[${CONSULT.OPEN_ATTR}]`)) {
+        setDrawer(false);
+        if (!consult.open) consult.showModal();
+        return;
+      }
+      // Bấm trúng chính <dialog> (không trúng thẻ bên trong) = bấm vào nền mờ quanh thẻ.
+      if (consult?.open && (t === consult || t.closest(`[${CONSULT.CLOSE_ATTR}]`))) {
+        consult.close();
+        return;
+      }
+
+      if (t.closest(`[${HEADER_SEARCH.TOGGLE_ATTR}]`)) {
+        e.preventDefault();
+        setSearch(!searchWrap?.classList.contains(STATE_CLASS.OPEN));
+        return;
+      }
+      if (!searchWrap?.contains(t)) setSearch(false);
 
       if (t.closest(`[${DRAWER.OPEN_ATTR}]`)) {
         setDrawer(true);
@@ -65,6 +98,7 @@ export default function ThemeJS() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       setDrawer(false);
+      setSearch(false);
       closeFilters();
     };
 
@@ -119,6 +153,7 @@ export default function ThemeJS() {
         .then((d) => {
           if (d.ok) {
             form.reset();
+            form.closest("dialog")?.close();
             alert("Cảm ơn bạn! THE UNI đã nhận được thông tin và sẽ liên hệ tư vấn sớm nhất. 🥔");
           } else {
             alert(d.error || "Có lỗi xảy ra, vui lòng thử lại hoặc gọi hotline nhé!");
@@ -156,43 +191,6 @@ export default function ThemeJS() {
         const content = head.nextElementSibling as HTMLElement | null;
         if (content) content.style.display = content.style.display === "none" ? "" : "none";
         head.querySelector(".down_icon")?.classList.toggle("cls_mn");
-        return;
-      }
-      // FAQ: mở/đóng từng câu (tái tạo đúng faq_box của theme: đổi cả màu chữ/nền)
-      const faqBtn = t.closest("button[data-faq]") as HTMLElement | null;
-      if (faqBtn) {
-        const n = faqBtn.dataset.faq;
-        const answer = document.getElementById(`qstg_${n}`);
-        const icon = document.getElementById(`qsic_${n}`);
-        const title = document.getElementById(`faqtitle_${n}`);
-        const opening = answer?.classList.contains("hidden");
-        answer?.classList.toggle("hidden");
-        if (opening) {
-          icon?.classList.remove("fa-angle-down", "text-white");
-          icon?.classList.add("fa-angle-up", "text-dark");
-          faqBtn.classList.add("faqtitle-show");
-          faqBtn.classList.remove("faqtitle-hidden");
-          title?.classList.add("text-dark");
-          title?.classList.remove("text-white");
-        } else {
-          icon?.classList.add("fa-angle-down", "text-white");
-          icon?.classList.remove("fa-angle-up", "text-dark");
-          faqBtn.classList.remove("faqtitle-show");
-          faqBtn.classList.add("faqtitle-hidden");
-          title?.classList.remove("text-dark");
-          title?.classList.add("text-white");
-        }
-        return;
-      }
-      // FAQ: bấm tiêu đề nhóm -> thu gọn/mở cả nhóm
-      const faqGroupHead = t.closest(".box-category-faqs > .title-confiden-product-home");
-      if (faqGroupHead) {
-        const group = faqGroupHead.closest(".box-category-faqs")!;
-        group.querySelectorAll<HTMLElement>(".box-article-faqs").forEach((el) => {
-          el.style.display = el.style.display === "none" ? "" : "none";
-        });
-        faqGroupHead.querySelector(".fa")?.classList.toggle("fa-angle-up");
-        faqGroupHead.querySelector(".fa")?.classList.toggle("fa-angle-down");
         return;
       }
       // Bài viết: toggle Mục lục
@@ -270,6 +268,7 @@ export default function ThemeJS() {
     window.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("submit", onSubmit);
     return () => {
+      disposeNavGlass();
       document.removeEventListener("click", onClick);
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("click", onFilterUI);

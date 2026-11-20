@@ -27,7 +27,8 @@
 :root {
   --uni-container: 1180px;
   --uni-gutter: 24px;
-  --uni-header-h: 72px;
+  --uni-header-h: 76px;
+  --uni-header-max: 1440px;
   --uni-section-y: 88px;
   --uni-head-gap: 56px;
 
@@ -53,7 +54,9 @@
   --uni-radius-lg: 4px;
   --uni-radius-full: 9999px;
 
-  --uni-header-bg: var(--c-bg);
+  /* Thanh menu là kính mờ ngả trắng: trang cuộn phía sau ánh lên rất nhẹ. */
+  --uni-header-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(243, 247, 244, 0.82) 100%);
+  --uni-header-line: rgba(0, 71, 50, 0.1);
   --uni-band: var(--c-sage-soft);
   --uni-surface: var(--c-bg);
   --uni-surface-raised: var(--c-sage-soft);
@@ -83,7 +86,6 @@
   :root {
     --uni-gutter: 16px;
     --uni-header-h: 64px;
-    --uni-topbar-h: 44px;
     --uni-section-y: 56px;
     --uni-head-gap: 32px;
   }
@@ -164,144 +166,302 @@ html { scrollbar-gutter: stable; }
 .uni-btn--card { padding: 10px 14px; font-size: 14px; border-radius: var(--uni-radius-sm); }
 .uni-btn--block { width: 100%; }
 
-/* ---------- Header ---------- */
+/* ---------- Header ----------
+   Thanh trắng kính mờ, menu nằm sát logo, mục đang xem nằm dưới một viên "liquid glass" trượt theo
+   con trỏ (lib/navGlass.ts). Bên phải: kính lúp tìm kiếm + nút Zalo. */
 header.uni-header {
   position: fixed !important;
   top: 0;
   left: 0;
   right: 0;
   z-index: var(--uni-z-header);
-  background: var(--uni-header-bg);
-  border-bottom: 1px solid var(--uni-line);
+  background: none;
+  border-bottom: 1px solid var(--uni-header-line);
   transition: transform var(--uni-ease);
+}
+/* Lớp kính mờ nằm ở ::before chứ không trên chính header: phần tử mang backdrop-filter trở thành
+   "gốc phông nền" của mọi thứ bên trong, khi đó viên kính và menu con chỉ còn thấy nền header thay
+   vì chữ và trang phía sau — hết khúc xạ. */
+header.uni-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--uni-header-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  header.uni-header::before { background: var(--c-bg); }
 }
 /* Cuộn xuống thì đẩy cả khung lên đúng bằng top bar: còn lại thanh menu (ThemeJS gắn class). Neo
    [id] vì vậy chỉ cần chừa --uni-header-h. */
 header.uni-header.is-scrolled { transform: translateY(calc(-1 * var(--uni-topbar-h))); }
+.uni-glass-defs { position: absolute; width: 0; height: 0; pointer-events: none; }
 
-/* ---------- Top bar: Zalo đặt hàng + địa chỉ xưởng ---------- */
+/* ---------- Top bar: địa chỉ xưởng ---------- */
 .uni-topbar {
   height: var(--uni-topbar-h);
-  color: var(--c-on-primary);
-  background: var(--c-primary);
+  color: var(--uni-text-muted);
+  background: var(--c-sage-soft);
 }
 .uni-topbar__inner {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px 12px;
   height: 100%;
-  max-width: 1280px;
+  max-width: var(--uni-header-max);
   margin: 0 auto;
   padding: 0 var(--uni-gutter);
-  font-size: 13.5px;
-  font-weight: 500;
+  font-size: 13px;
   line-height: 1.3;
 }
 .uni-topbar__item { min-width: 0; color: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-a.uni-topbar__item:hover { color: var(--c-gold); text-decoration: underline; }
-.uni-topbar__sep { color: var(--c-gold); }
+a.uni-topbar__item:hover { color: var(--c-primary); text-decoration: underline; }
 @media (max-width: 768px) {
-  /* Hai dòng chồng nhau thay vì một dòng dài bị cắt. */
-  .uni-topbar__inner { flex-direction: column; justify-content: center; gap: 2px; font-size: 12px; }
-  .uni-topbar__item { max-width: 100%; }
-  .uni-topbar__sep { display: none; }
+  .uni-topbar__inner { font-size: 12px; }
 }
+
 .uni-header__bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: clamp(8px, 1.4vw, 24px);
   height: var(--uni-header-h);
-  max-width: 1280px;
+  max-width: var(--uni-header-max);
   margin: 0 auto;
-  padding: 0 var(--uni-gutter);
+  padding: 0 clamp(16px, 2.5vw, 56px);
 }
 .uni-brand {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
-  color: var(--uni-text);
+  color: var(--c-primary);
   text-decoration: none;
 }
-.uni-brand:hover { color: var(--uni-text); text-decoration: none; }
-.uni-brand__logo { height: 42px; width: auto; object-fit: contain; }
-.uni-brand__name { font-size: 16px; font-weight: 800; white-space: nowrap; letter-spacing: 0.02em; }
+.uni-brand:hover { color: var(--c-primary); text-decoration: none; }
+.uni-brand__logo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.uni-brand__name { font-size: clamp(18px, 1.8vw, 22px); font-weight: 700; white-space: nowrap; letter-spacing: 0.01em; }
 
 .uni-nav__list,
 .uni-nav__sub,
 .uni-drawer__nav,
 .uni-drawer__sub { list-style: none; margin: 0; padding: 0; }
-.uni-nav__list { display: flex; align-items: center; gap: 2px; }
+.uni-nav__list { position: relative; display: flex; align-items: center; gap: 2px; }
 .uni-nav__item { position: relative; }
 .uni-nav__link {
   position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
-  font-size: 14px;
-  font-weight: 600;
+  gap: 7px;
+  height: var(--uni-glass-h);
+  padding: 0 clamp(8px, 1.6vw - 9px, 17px);
+  font-size: clamp(15px, 1.35vw, 17px);
+  font-weight: 500;
   color: var(--uni-text);
   white-space: nowrap;
-  border-radius: var(--uni-radius-sm);
+  border-radius: var(--uni-radius-full);
+  text-decoration: none;
+  transition: color var(--uni-ease);
+}
+.uni-nav__link:hover,
+.uni-nav__link:focus,
+.uni-nav__item.is-active > .uni-nav__link,
+.uni-nav__item.is-under-glass > .uni-nav__link { color: var(--c-primary); text-decoration: none; }
+.uni-nav__item.has-sub > .uni-nav__link::after {
+  content: "";
+  border: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  border-bottom: 0;
+}
+
+/* ---------- Viên kính của menu ("liquid glass") ----------
+   Ba lớp tạo cảm giác kính: (1) khúc xạ — ba mảnh l/m/r bẻ cong hình phía sau ở vành kính bằng bộ lọc
+   SVG của lib/glassLens.ts; (2) phản chiếu — viền sáng ::before, điểm sáng ::after chạy theo con trỏ,
+   vệt sáng lướt qua khi kính trượt; (3) khối — bóng đổ và bóng trong cho bề dày.
+   Vị trí do lib/navGlass.ts đặt qua --glass-x / --glass-w. */
+.uni-nav__glass {
+  --glass-spring: linear(0, 0.089, 0.29, 0.524, 0.738, 0.906, 1.019, 1.082, 1.106, 1.102, 1.083, 1.058, 1.035, 1.015, 1.001, 0.993, 0.989, 0.989, 0.99, 0.993, 0.996, 0.998, 1);
+  --glass-shade: 0, 44, 30;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 0;
+  width: var(--glass-w, 0);
+  height: var(--uni-glass-h);
+  margin-top: calc(var(--uni-glass-h) / -2);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(var(--glass-x, 0), var(--glass-y, 0), 0);
+  transition: transform 0.6s cubic-bezier(0.3, 1.4, 0.5, 1), width 0.6s cubic-bezier(0.3, 1.4, 0.5, 1), opacity 0.25s ease;
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  .uni-nav__glass { transition-timing-function: var(--glass-spring), var(--glass-spring), ease; }
+}
+.uni-nav__glass.is-on { opacity: 1; }
+.uni-nav__glass.is-snap { transition: none; }
+/* Vẽ được khúc xạ thì kính nằm TRÊN chữ (chữ nhìn xuyên qua kính); không thì nằm dưới chữ. */
+.uni-nav__glass.has-lens { z-index: 2; }
+
+.uni-nav__glass-body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  border-radius: var(--uni-radius-full);
+  /* Thân kính: giữa trong, càng ra mép càng đậm (kính dày ở vành), nửa trên hắt sáng. */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.05) 36%, rgba(var(--glass-shade), 0.03) 64%, rgba(var(--glass-shade), 0.1) 100%),
+    rgba(var(--glass-shade), 0.04);
+  box-shadow:
+    0 1px 2px rgba(var(--glass-shade), 0.14),
+    0 8px 16px -6px rgba(var(--glass-shade), 0.24),
+    0 0 0 0.5px rgba(var(--glass-shade), 0.18),
+    inset 0 2px 2px -1px #fff,
+    inset 0 -5px 7px -3px rgba(var(--glass-shade), 0.18),
+    inset 0 0 9px rgba(var(--glass-shade), 0.09),
+    inset 2px 0 3px -2px rgba(255, 80, 130, 0.35),
+    inset -2px 0 3px -2px rgba(40, 150, 255, 0.4);
+  transition: scale 0.5s cubic-bezier(0.3, 1.4, 0.5, 1), box-shadow var(--uni-ease), background-color var(--uni-ease);
+}
+/* Nhấc lên: lớn hơn một chút, trong hơn, bóng sâu và xa hơn — như kính rời khỏi mặt bàn. */
+.uni-nav__glass.is-lifted .uni-nav__glass-body {
+  scale: 1.06;
+  background-color: rgba(var(--glass-shade), 0.02);
+  box-shadow:
+    0 2px 4px rgba(var(--glass-shade), 0.12),
+    0 20px 32px -10px rgba(var(--glass-shade), 0.36),
+    0 0 0 0.5px rgba(var(--glass-shade), 0.2),
+    inset 0 2px 2px -1px #fff,
+    inset 0 -6px 8px -3px rgba(var(--glass-shade), 0.2),
+    inset 0 0 10px rgba(var(--glass-shade), 0.1),
+    inset 2.5px 0 4px -2px rgba(255, 80, 130, 0.45),
+    inset -2.5px 0 4px -2px rgba(40, 150, 255, 0.5);
+}
+.uni-nav__glass-part { flex: 0 0 var(--uni-glass-cap); }
+.uni-nav__glass-part--l { border-radius: var(--uni-radius-full) 0 0 var(--uni-radius-full); }
+.uni-nav__glass-part--m { flex: 1 1 0; min-width: 0; }
+.uni-nav__glass-part--r { border-radius: 0 var(--uni-radius-full) var(--uni-radius-full) 0; }
+.uni-nav__glass.has-lens .uni-nav__glass-part--l { -webkit-backdrop-filter: url(#uni-lens-l); backdrop-filter: url(#uni-lens-l); }
+.uni-nav__glass.has-lens .uni-nav__glass-part--m { -webkit-backdrop-filter: url(#uni-lens-m); backdrop-filter: url(#uni-lens-m); }
+.uni-nav__glass.has-lens .uni-nav__glass-part--r { -webkit-backdrop-filter: url(#uni-lens-r); backdrop-filter: url(#uni-lens-r); }
+/* Viên kính của drawer: trượt dọc từ mép trên danh sách, bộ lọc khúc xạ theo khổ 48px. */
+.uni-nav__glass--drawer { top: 0; margin-top: 0; }
+.uni-nav__glass--drawer.has-lens .uni-nav__glass-part--l { -webkit-backdrop-filter: url(#uni-dlens-l); backdrop-filter: url(#uni-dlens-l); }
+.uni-nav__glass--drawer.has-lens .uni-nav__glass-part--m { -webkit-backdrop-filter: url(#uni-dlens-m); backdrop-filter: url(#uni-dlens-m); }
+.uni-nav__glass--drawer.has-lens .uni-nav__glass-part--r { -webkit-backdrop-filter: url(#uni-dlens-r); backdrop-filter: url(#uni-dlens-r); }
+/* Viền phản chiếu: sáng nhất ở góc trên-trái và dưới-phải, tối ở hai góc còn lại — đúng kiểu ánh
+   đèn bắt lên mép kính. Góc sáng xoay nhẹ theo con trỏ (--glass-mx: 0 = mép trái, 1 = mép phải). */
+.uni-nav__glass-body::before,
+.uni-nav__glass-body::after,
+.uni-nav__glass-sheen {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.uni-nav__glass-body::before {
+  padding: 1.5px;
+  background: conic-gradient(
+    from calc((var(--glass-mx, 0.5) - 0.5) * 36deg),
+    rgba(255, 255, 255, 0.85) 0deg,
+    rgba(255, 255, 255, 0.2) 48deg,
+    rgba(var(--glass-shade), 0.3) 82deg,
+    rgba(255, 255, 255, 0.9) 106deg,
+    #fff 150deg,
+    rgba(var(--glass-shade), 0.2) 205deg,
+    rgba(var(--glass-shade), 0.32) 256deg,
+    rgba(255, 255, 255, 0.95) 284deg,
+    #fff 320deg,
+    rgba(255, 255, 255, 0.85) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+/* Điểm sáng: một vệt ở vành trên chạy theo con trỏ, một vệt hắt ngược ở vành dưới. */
+.uni-nav__glass-body::after {
+  inset: 1.5px;
+  background:
+    radial-gradient(26% 34% at calc(8% + var(--glass-mx, 0.3) * 60%) 0%, #fff, rgba(255, 255, 255, 0) 100%),
+    radial-gradient(60% 80% at calc(var(--glass-mx, 0.3) * 100%) -30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 70%),
+    radial-gradient(22% 30% at calc(92% - var(--glass-mx, 0.3) * 60%) 100%, #fff, rgba(255, 255, 255, 0) 100%),
+    radial-gradient(48% 60% at calc(100% - var(--glass-mx, 0.3) * 100%) 130%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(112deg, rgba(255, 255, 255, 0) calc(18% + var(--glass-mx, 0.3) * 40%), rgba(255, 255, 255, 0.28) calc(30% + var(--glass-mx, 0.3) * 40%), rgba(255, 255, 255, 0) calc(42% + var(--glass-mx, 0.3) * 40%));
+}
+.uni-nav__glass-sheen { overflow: hidden; }
+.uni-nav__glass-sheen > i {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: 0;
+  width: 34%;
+  opacity: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0));
+}
+@media (prefers-reduced-motion: reduce) {
+  .uni-nav__glass,
+  .uni-nav__glass-body { transition: opacity 0.2s ease; }
+}
+
+/* ---------- Tấm kính mờ: menu con + khung tìm kiếm ---------- */
+.uni-nav__sub,
+.uni-header__search-pop {
+  position: absolute;
+  top: calc(100% + (var(--uni-header-h) - var(--uni-glass-h)) / 2 + 8px);
+  z-index: 3;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.52));
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
+  backdrop-filter: blur(26px) saturate(190%);
+  box-shadow:
+    0 28px 48px -18px rgba(0, 44, 30, 0.34),
+    0 2px 6px rgba(0, 44, 30, 0.08),
+    0 0 0 0.5px rgba(0, 44, 30, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(0.97);
+  /* Ẩn thì đợi mờ xong mới tắt visibility; hiện thì bật ngay (ô tìm kiếm cần nhận focus tức thì). */
+  transition: opacity var(--uni-ease-fast), transform var(--uni-ease), visibility 0s linear 0.16s;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .uni-nav__sub,
+  .uni-header__search-pop { background: var(--uni-surface); }
+}
+.uni-nav__sub {
+  left: -6px;
+  min-width: 250px;
+  padding: 8px;
+  border-radius: 20px;
+  transform-origin: 40px 0;
+}
+/* Khoảng hở giữa mục menu và tấm kính: lấp bằng vùng trong suốt để rê chuột xuống không bị đóng. */
+.uni-nav__sub::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: calc((var(--uni-header-h) - var(--uni-glass-h)) / 2 + 8px);
+}
+.uni-nav__item:hover > .uni-nav__sub,
+.uni-nav__item:focus-within > .uni-nav__sub,
+.uni-header__search.is-open > .uni-header__search-pop { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.uni-nav__sublink {
+  display: block;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--uni-text);
+  border-radius: 12px;
   text-decoration: none;
   transition: background-color var(--uni-ease-fast), color var(--uni-ease-fast);
 }
-.uni-nav__link:hover { color: var(--c-primary); background: var(--uni-hover-bg); text-decoration: none; }
-.uni-nav__item.has-sub > .uni-nav__link::after {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: translateY(-2px) rotate(45deg);
-}
-.uni-nav__item.is-active > .uni-nav__link {
-  color: var(--c-primary);
-  font-weight: 700;
-}
-.uni-nav__item.is-active > .uni-nav__link::before {
-  content: "";
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 0;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--mainColor);
-}
-.uni-nav__sub {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  min-width: 240px;
-  padding: 8px;
-  background: var(--uni-surface);
-  border: 1px solid var(--uni-line);
-  border-top: 2px solid var(--c-primary);
-  border-radius: 0;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(6px);
-  transition: opacity var(--uni-ease-fast), transform var(--uni-ease-fast), visibility var(--uni-ease-fast);
-}
-.uni-nav__item:hover > .uni-nav__sub,
-.uni-nav__item:focus-within > .uni-nav__sub { opacity: 1; visibility: visible; transform: none; }
-.uni-nav__sublink {
-  display: block;
-  padding: 9px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--uni-text);
-  border-radius: var(--uni-radius-sm);
-  text-decoration: none;
-}
 .uni-nav__sublink:hover,
-.uni-nav__sublink.is-active { color: var(--c-primary); background: var(--uni-hover-bg); text-decoration: none; }
+.uni-nav__sublink.is-active { color: var(--c-primary); background: rgba(0, 71, 50, 0.08); text-decoration: none; }
 
-.uni-header__actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.uni-header__actions { display: flex; align-items: center; gap: clamp(8px, 1.2vw, 16px); flex-shrink: 0; margin-left: auto; }
 
 .uni-search { position: relative; display: flex; align-items: center; margin: 0; }
 .uni-search .search-auto.form-control {
@@ -333,102 +493,200 @@ a.uni-topbar__item:hover { color: var(--c-gold); text-decoration: underline; }
 }
 .uni-search__btn svg { width: 15px; height: 15px; }
 
+/* Tìm kiếm trên header: nút kính lúp, bấm thì thả khung nhập (tấm kính mờ ở trên). */
+.uni-header__search { position: relative; }
+.uni-header__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--uni-glass-h, 42px);
+  height: var(--uni-glass-h, 42px);
+  color: var(--uni-text);
+  border-radius: 50%;
+  transition: background-color var(--uni-ease-fast), color var(--uni-ease-fast);
+}
+.uni-header__icon:hover,
+.uni-header__search.is-open > .uni-header__icon { color: var(--c-primary); background: rgba(0, 71, 50, 0.08); }
+.uni-header__icon svg { width: 19px; height: 19px; }
+.uni-header__search-pop {
+  --uni-glass-h: 42px;
+  right: -6px;
+  padding: 8px;
+  border-radius: var(--uni-radius-full);
+  transform-origin: calc(100% - 28px) 0;
+}
+.uni-header__search-pop .uni-search .search-auto.form-control {
+  width: 300px;
+  height: 44px;
+  padding: 0 48px 0 20px;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.75);
+  border-color: transparent;
+  border-radius: var(--uni-radius-full);
+}
+.uni-header__search-pop .uni-search .search-auto.form-control:focus { border-color: var(--c-primary); }
+.uni-header__search-pop .uni-search__btn { right: 6px; width: 36px; height: 36px; }
+
+/* Nút Zalo: đường chốt đơn chính, mang luôn số để khách đọc được ngay. */
+.uni-header__cta {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 clamp(14px, 1.4vw, 20px);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-on-primary);
+  white-space: nowrap;
+  background: var(--c-primary);
+  border-radius: var(--uni-radius-full);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 8px 16px -8px rgba(0, 71, 50, 0.55);
+  text-decoration: none;
+  transition: background-color var(--uni-ease-fast);
+}
+.uni-header__cta:hover { color: var(--c-on-primary); background: var(--c-primary-dark); text-decoration: none; }
+
 .uni-burger {
   display: none;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 5px;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   padding: 0;
-  background: transparent;
-  border: 1px solid var(--uni-line-strong);
-  border-radius: var(--uni-radius-sm);
+  background: rgba(0, 71, 50, 0.07);
+  border: 0;
+  border-radius: 50%;
   cursor: pointer;
 }
-.uni-burger span { width: 22px; height: 2px; border-radius: 2px; background: var(--uni-text); }
+.uni-burger span { width: 20px; height: 2px; border-radius: 2px; background: var(--uni-text); }
 
-/* ---------- Drawer menu (di động) ---------- */
+/* ---------- Drawer menu (di động) ----------
+   Tấm kính mờ nổi cách mép màn hình, bo góc lớn như sheet của iOS; trong đó viên kính trượt dọc
+   theo mục menu (cùng chất liệu với viên kính menu ngang, lib/navGlass.ts điều khiển). */
 .uni-drawer-overlay {
   position: fixed;
   inset: 0;
   z-index: var(--uni-z-overlay);
-  background: rgba(22, 35, 29, 0.55);
+  background: rgba(14, 30, 22, 0.32);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
 html.uni-scroll-lock .uni-drawer-overlay { opacity: 1; pointer-events: auto; }
 .uni-drawer {
+  --drawer-gap: 10px;
+  --drawer-line: rgba(0, 71, 50, 0.1);
   position: fixed;
-  top: 0;
-  right: 0;
+  top: var(--drawer-gap);
+  right: var(--drawer-gap);
+  bottom: var(--drawer-gap);
   z-index: var(--uni-z-drawer);
   display: flex;
   flex-direction: column;
-  width: 320px;
-  max-width: 85vw;
-  height: 100%;
-  padding: 24px;
-  background: var(--uni-surface);
-  border-left: 1px solid var(--uni-line);
-  transform: translateX(100%);
+  width: 340px;
+  max-width: calc(88vw - var(--drawer-gap));
+  padding: 20px 18px;
+  border-radius: 30px;
+  box-shadow:
+    0 30px 60px -20px rgba(0, 44, 30, 0.45),
+    0 2px 8px rgba(0, 44, 30, 0.1),
+    0 0 0 0.5px rgba(0, 44, 30, 0.16);
+  transform: translateX(calc(100% + var(--drawer-gap) * 2)) scale(0.96);
+  transform-origin: 100% 50%;
   visibility: hidden;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+  transition: transform 0.42s cubic-bezier(0.2, 1.1, 0.3, 1), visibility 0.42s;
+}
+/* Lớp kính mờ nằm ở ::before, không đặt lên chính drawer: phần tử có backdrop-filter thành "gốc nền"
+   của mọi thứ bên trong, viên kính khúc xạ trong drawer sẽ chỉ thấy nền trống (xám) thay vì thấy chữ. */
+.uni-drawer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 60% at 100% 0%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(244, 248, 245, 0.68));
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  backdrop-filter: blur(30px) saturate(190%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .uni-drawer::before { background: var(--uni-surface); }
 }
 .uni-drawer.is-open { transform: none; visibility: visible; }
 .uni-drawer__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--uni-line);
+  padding: 0 4px 16px;
+  border-bottom: 1px solid var(--drawer-line);
 }
 .uni-drawer__close {
-  width: 40px;
-  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   padding: 0;
-  font-size: 28px;
+  font-size: 26px;
   line-height: 1;
-  color: var(--uni-text-muted);
-  background: none;
+  color: var(--uni-text);
+  background: rgba(255, 255, 255, 0.55);
   border: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 0.5px rgba(0, 44, 30, 0.14), 0 4px 10px -4px rgba(0, 44, 30, 0.25);
   cursor: pointer;
 }
-.uni-drawer__search { padding-top: 18px; }
-.uni-drawer__search .uni-search .search-auto.form-control { width: 100%; height: 44px; font-size: 16px; }
+.uni-drawer__search { padding-top: 16px; }
+.uni-drawer__search .uni-search .search-auto.form-control {
+  width: 100%;
+  height: 46px;
+  padding-left: 18px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 0;
+  border-radius: var(--uni-radius-full);
+  box-shadow: inset 0 1px 2px rgba(0, 44, 30, 0.1), 0 0 0 0.5px rgba(0, 44, 30, 0.16);
+}
+.uni-drawer__search .uni-search__btn { right: 4px; }
 .uni-drawer__nav {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   flex-grow: 1;
-  padding: 18px 0;
+  margin: 0;
+  padding: 14px 0;
   overflow-y: auto;
+  list-style: none;
 }
 .uni-drawer__row { display: flex; align-items: center; }
 .uni-drawer__link {
   flex: 1;
   display: flex;
   align-items: center;
-  min-height: 44px;
-  padding: 10px 14px;
-  font-size: 16px;
+  min-height: var(--uni-glass-h, 48px);
+  padding: 0 20px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--uni-text);
-  border-radius: var(--uni-radius-sm);
+  border-radius: var(--uni-radius-full);
   text-decoration: none;
+  transition: color var(--uni-ease-fast);
 }
 .uni-drawer__link:hover,
 .uni-drawer__item.is-active > .uni-drawer__link,
-.uni-drawer__item.is-active > .uni-drawer__row > .uni-drawer__link {
-  color: var(--c-primary);
-  background: var(--uni-hover-bg);
-  text-decoration: none;
-}
+.uni-drawer__item.is-active > .uni-drawer__row > .uni-drawer__link,
+.uni-drawer__item.is-under-glass > .uni-drawer__link,
+.uni-drawer__item.is-under-glass > .uni-drawer__row > .uni-drawer__link { color: var(--c-primary); text-decoration: none; }
+/* Chữ và nút mở menu con nằm trên viên kính khi trình duyệt không vẽ được khúc xạ. */
+.uni-drawer__row,
+.uni-drawer__item > .uni-drawer__link { position: relative; z-index: 1; }
 .uni-drawer__toggle {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   padding: 0;
   color: var(--uni-text);
@@ -443,11 +701,19 @@ html.uni-scroll-lock .uni-drawer-overlay { opacity: 1; pointer-events: auto; }
   height: 8px;
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
-  transform: rotate(45deg);
+  transform: translateY(-2px) rotate(45deg);
   transition: transform var(--uni-ease-fast);
 }
-.uni-drawer__item.is-open > .uni-drawer__row > .uni-drawer__toggle::before { transform: rotate(-135deg); }
-.uni-drawer__sub { display: none; padding: 4px 0 4px 14px; }
+.uni-drawer__item.is-open > .uni-drawer__row > .uni-drawer__toggle::before { transform: translateY(2px) rotate(-135deg); }
+.uni-drawer__sub {
+  display: none;
+  margin: 6px 4px 6px 12px;
+  padding: 6px;
+  list-style: none;
+  background: rgba(255, 255, 255, 0.42);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 0.5px rgba(0, 44, 30, 0.1);
+}
 .uni-drawer__item.is-open > .uni-drawer__sub { display: block; }
 .uni-drawer__sublink {
   display: flex;
@@ -456,17 +722,24 @@ html.uni-scroll-lock .uni-drawer-overlay { opacity: 1; pointer-events: auto; }
   padding: 8px 14px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--uni-text-muted);
+  color: var(--uni-text);
+  border-radius: 14px;
   text-decoration: none;
+  transition: background-color var(--uni-ease-fast), color var(--uni-ease-fast);
 }
 .uni-drawer__sublink:hover,
-.uni-drawer__sublink.is-active { color: var(--mainColor); text-decoration: none; }
+.uni-drawer__sublink.is-active { color: var(--c-primary); background: rgba(0, 71, 50, 0.08); text-decoration: none; }
 .uni-drawer__foot {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-top: 18px;
-  border-top: 1px solid var(--uni-line);
+  padding-top: 16px;
+  border-top: 1px solid var(--drawer-line);
+}
+.uni-drawer__foot .uni-btn { border-radius: var(--uni-radius-full); }
+@media (prefers-reduced-motion: reduce) {
+  .uni-drawer { transform: translateX(calc(100% + var(--drawer-gap) * 2)); transition: transform 0.2s ease, visibility 0.2s; }
+  .uni-drawer.is-open { transform: none; }
 }
 
 /* Màn cảm ứng không có hover (tablet ngang ≥1200px) không mở được menu con của menu ngang: chạm mục
@@ -482,7 +755,8 @@ html.uni-scroll-lock .uni-drawer-overlay { opacity: 1; pointer-events: auto; }
   .uni-drawer { overflow-y: auto; }
   .uni-drawer__nav { flex-grow: 0; overflow-y: visible; }
 }
-@media (max-width: 400px) {
+/* Màn hẹp: logo + nút Zalo + nút menu đã vừa khít, bỏ chữ tên thương hiệu. */
+@media (max-width: 430px) {
   .uni-brand__name { display: none; }
 }
 
@@ -661,51 +935,177 @@ html.uni-scroll-lock .uni-drawer-overlay { opacity: 1; pointer-events: auto; }
   .uni-badge { top: 8px; left: 8px; padding: 3px 6px; font-size: 10.5px; }
 }
 
-/* ---------- Khối nhận tư vấn (cuối trang) ---------- */
-.uni-cta { padding: var(--uni-section-y) 0; }
-.uni-cta__box {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 32px;
+/* ---------- Form nhận tư vấn: khối cuối trang + popup ----------
+   Theo thiết kế "Form Options": nền xám ấm có quầng vàng góc trái, tiêu đề chữ hẹp cỡ lớn, form là
+   tấm kính trắng bo tròn với ô nhập dạng viên thuốc. Popup (nút nổi) dùng lại đúng tấm kính đó. */
+.uni-cta,
+.uni-consult {
+  --consult-ink: #242528;
+  --consult-muted: #5c5d61;
+  --consult-green: #064a34;
+  --consult-green-hover: #0a5c41;
+}
+.uni-cta {
+  padding: clamp(48px, 6vw, 88px) 0;
+  background:
+    radial-gradient(circle at 12% 20%, #f1dc9c 0, rgba(241, 220, 156, 0) 38%),
+    radial-gradient(circle at 88% 85%, #d8d6cf 0, rgba(216, 214, 207, 0) 45%),
+    #eeede9;
+}
+.uni-cta__inner {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding: 48px;
-  overflow: hidden;
-  color: var(--c-on-primary);
-  background: var(--c-primary);
-  border-radius: var(--uni-radius-lg);
+  justify-content: space-between;
+  gap: clamp(28px, 5vw, 72px);
 }
 .uni-cta__title {
-  position: relative;
+  flex: 1 1 320px;
+  min-width: 0;
   margin: 0;
-  font-size: 30px;
-  font-weight: 800;
-  line-height: 1.25;
-  color: var(--c-on-primary);
+  font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(52px, 7.5vw, 96px);
+  font-weight: 700;
+  line-height: 1.16;
+  text-transform: uppercase;
+  color: var(--consult-ink);
 }
-.uni-cta__form { position: relative; display: flex; flex-direction: column; gap: 10px; margin: 0; }
-.uni-cta__form .form-control {
-  height: 48px;
-  padding: 0 16px;
+.uni-cta__card,
+.uni-consult__card {
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.5));
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 22px 44px rgba(36, 37, 40, 0.14),
+    0 2px 4px rgba(36, 37, 40, 0.08),
+    inset 0 2px 1px #fff,
+    inset 0 -4px 8px rgba(36, 37, 40, 0.06);
+}
+.uni-cta__card { flex: 1 1 340px; max-width: 460px; min-width: 0; padding: 26px; }
+.uni-consult-form { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+.uni-consult-form__input {
+  width: 100%;
+  height: auto;
+  padding: 15px 24px;
   /* Dưới 16px thì iOS (cả iPad) tự phóng to trang khi chạm vào ô. */
+  font: inherit;
   font-size: 16px;
-  color: var(--uni-text);
-  background: var(--c-bg);
-  border: 1px solid transparent;
-  border-radius: var(--uni-radius-md);
+  line-height: 1.4;
+  color: var(--consult-ink);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(36, 37, 40, 0.1);
+  border-radius: 999px;
+  box-shadow: inset 0 2px 3px rgba(36, 37, 40, 0.06);
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
-.uni-cta__form .form-control:focus { border-color: var(--c-gold); outline: 2px solid var(--c-gold); outline-offset: 0; box-shadow: none; }
-/* Nút gửi nằm trên nền xanh: đổi sang vàng đặc. */
-.uni-cta .uni-btn--primary { background: var(--c-gold); color: var(--c-primary); }
-.uni-cta .uni-btn--primary:hover { background: var(--c-on-primary); color: var(--c-primary); }
+.uni-consult-form__input::placeholder { color: var(--consult-muted); opacity: 1; }
+.uni-consult-form__input:focus {
+  background: #fff;
+  border-color: var(--consult-green);
+  box-shadow: inset 0 2px 3px rgba(36, 37, 40, 0.06), 0 0 0 3px rgba(6, 74, 52, 0.12);
+}
+.uni-consult-form__submit {
+  margin-top: 4px;
+  padding: 16px 24px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--consult-green);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.uni-consult-form__submit:hover,
+.uni-consult-form__submit:focus-visible { background: var(--consult-green-hover); }
+.uni-consult-form__submit:active { transform: translateY(1px); }
+.uni-consult-form__submit:disabled { opacity: 0.6; cursor: progress; }
+
+/* Popup: thẻ kính giữa màn hình, nền phía sau tối và mờ. Mở/đóng có chuyển động (@starting-style);
+   trình duyệt cũ chỉ hiện/ẩn ngay. */
+.uni-consult {
+  width: min(460px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: visible;
+  color: var(--consult-ink);
+  background: none;
+  border: 0;
+  opacity: 0;
+  transform: translateY(16px) scale(0.96);
+  transition: opacity 0.22s ease, transform 0.32s cubic-bezier(0.2, 1.1, 0.3, 1), overlay 0.32s allow-discrete, display 0.32s allow-discrete;
+}
+.uni-consult[open] { opacity: 1; transform: none; }
+@starting-style {
+  .uni-consult[open] { opacity: 0; transform: translateY(16px) scale(0.96); }
+}
+.uni-consult::backdrop {
+  background: rgba(20, 24, 22, 0);
+  -webkit-backdrop-filter: blur(0);
+  backdrop-filter: blur(0);
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease, overlay 0.3s allow-discrete, display 0.3s allow-discrete;
+}
+.uni-consult[open]::backdrop { background: rgba(20, 24, 22, 0.42); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+@starting-style {
+  .uni-consult[open]::backdrop { background: rgba(20, 24, 22, 0); -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0); }
+}
+html:has(.uni-consult[open]) { overflow: hidden; }
+.uni-consult__card {
+  position: relative;
+  max-height: calc(100dvh - 32px);
+  padding: 30px 26px 26px;
+  overflow-y: auto;
+  /* Nền mờ phía sau đã tối: thẻ đặc hơn khối cuối trang để chữ rõ. */
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 246, 242, 0.9));
+}
+.uni-consult__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--consult-ink);
+  background: rgba(255, 255, 255, 0.7);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 0.5px rgba(36, 37, 40, 0.14), 0 4px 10px -4px rgba(36, 37, 40, 0.25);
+  cursor: pointer;
+}
+.uni-consult__title {
+  margin: 0 52px 8px 0;
+  font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
+  font-size: 44px;
+  text-wrap: balance;
+  font-weight: 700;
+  line-height: 1.08;
+  text-transform: uppercase;
+  color: var(--consult-ink);
+}
+.uni-consult__sub { margin: 0 0 20px; font-size: 15px; line-height: 1.55; color: var(--consult-muted); }
+@media (prefers-reduced-motion: reduce) {
+  .uni-consult,
+  .uni-consult::backdrop { transition: none; }
+}
 
 @media (max-width: 768px) {
   .uni-page-hero__title { font-size: 28px; }
   .uni-page-hero__desc,
   .uni-section-head__sub { font-size: 15px; }
   .uni-section-head__title { font-size: 28px; }
-  .uni-cta__box { grid-template-columns: 1fr; gap: 24px; padding: 28px 20px; }
-  .uni-cta__title { font-size: 26px; }
+  .uni-cta__card { padding: 18px; border-radius: 28px; }
+  .uni-consult__title { font-size: 38px; }
 }
 
 /* ---------- Footer ---------- */
@@ -716,7 +1116,7 @@ html.uni-scroll-lock .uni-drawer-overlay { opacity: 1; pointer-events: auto; }
 }
 .uni-footer__grid {
   display: grid;
-  grid-template-columns: 1.5fr 1.2fr 1fr 1fr;
+  grid-template-columns: 1.5fr 1.4fr 1fr;
   gap: 48px;
   margin-bottom: 48px;
 }
@@ -780,6 +1180,17 @@ html.uni-scroll-lock .uni-drawer-overlay { opacity: 1; pointer-events: auto; }
   border-radius: 50%;
 }
 .uni-float__btn img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+/* Nút mở form tư vấn: tròn vàng (cùng màu nút "Gọi xưởng"), icon nét tối — nổi hơn hai icon xanh. */
+.uni-float__btn--consult {
+  padding: 0;
+  color: #242528;
+  background: #e6b93e;
+  border: 0;
+  box-shadow: 0 8px 18px -6px rgba(118, 90, 18, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.18s ease;
+}
+.uni-float__btn--consult:hover { background: #dcac2c; transform: translateY(-2px); }
 /* Icon gọi điện của theme là hình điện thoại trần, không phải hình tròn như hai icon kia. */
 .uni-float__btn--phone { background: var(--c-primary); }
 .uni-float__btn--phone img { padding: 22%; border-radius: 0; object-fit: contain; }
@@ -815,7 +1226,7 @@ html.uni-scroll-lock .uni-drawer-overlay { opacity: 1; pointer-events: auto; }
     align-items: stretch;
     gap: 0;
     padding-bottom: env(safe-area-inset-bottom);
-    background: var(--uni-header-bg);
+    background: var(--uni-surface);
     border-top: 1px solid var(--uni-line);
   }
   .uni-float:has(.uni-float__btn:not(.backtop)) .uni-float__btn {
@@ -834,6 +1245,15 @@ html.uni-scroll-lock .uni-drawer-overlay { opacity: 1; pointer-events: auto; }
   }
   .uni-float:has(.uni-float__btn:not(.backtop)) .uni-float__btn:hover { color: var(--c-primary); }
   .uni-float:has(.uni-float__btn:not(.backtop)) .uni-float__btn img { width: 26px; height: 26px; flex-shrink: 0; }
+  .uni-float:has(.uni-float__btn:not(.backtop)) .uni-float__btn--consult { background: none; box-shadow: none; transform: none; font: inherit; font-size: 12px; font-weight: 700; }
+  .uni-float:has(.uni-float__btn:not(.backtop)) .uni-float__btn--consult .uni-float__icon {
+    width: 26px;
+    height: 26px;
+    padding: 4px;
+    color: #242528;
+    background: #e6b93e;
+    border-radius: 50%;
+  }
   .uni-float:has(.uni-float__btn:not(.backtop)) .uni-float__btn--phone { background: none; }
   .uni-float:has(.uni-float__btn:not(.backtop)) .uni-float__btn--phone img {
     padding: 4px;
@@ -870,7 +1290,7 @@ html.uni-scroll-lock .uni-drawer-overlay { opacity: 1; pointer-events: auto; }
   .uni-brand { min-width: var(--uni-tap); min-height: var(--uni-tap); }
   .uni-burger,
   .uni-drawer__close { width: var(--uni-tap); height: var(--uni-tap); }
-  .uni-header__cta { min-height: var(--uni-tap); }
+  .uni-header__cta { height: var(--uni-tap); }
   .uni-drawer__foot .uni-btn { min-height: var(--uni-tap); padding: 12px 24px; font-size: 15px; }
   .uni-search .search-auto.form-control { height: var(--uni-tap); padding-right: calc(var(--uni-tap) + 4px); }
   .uni-search__btn { right: 0; width: var(--uni-tap); height: var(--uni-tap); }

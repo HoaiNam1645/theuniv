@@ -19,7 +19,8 @@ function initSliders() {
 
   const homeSlider = `.${HOME_SLIDER_CLASS}`;
   const heroEl = document.querySelector(homeSlider);
-  if (heroEl) {
+  // Một ảnh thì để tĩnh: bật loop + autoplay là swiper nhân bản ảnh rồi cứ 6 giây trượt sang chính nó.
+  if (heroEl && heroEl.querySelectorAll(".swiper-slide").length > 1) {
     const hero = new Swiper(homeSlider, {
       autoplay: { delay: 6000 },
       loop: true,

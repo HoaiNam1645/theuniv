@@ -2,7 +2,9 @@
 // Phần động: logo, tên brand, menu (bảng menus), thông tin công ty (bảng settings).
 import { db } from "@/lib/db";
 import { ZALO_CHAT_BASE } from "@/lib/studio/zalo";
-import { DRAWER, NAV_ITEM_ATTR, NAV_LINK_ATTR } from "@/lib/siteDom";
+import { CONSULT, DRAWER, DRAWER_GLASS, HEADER_SEARCH, NAV_GLASS, NAV_ITEM_ATTR, NAV_LINK_ATTR } from "@/lib/siteDom";
+import { CONSULT_TEXT, consultFormHtml } from "@/lib/layoutHtml";
+import { GLASS_LENS_DEFS } from "@/lib/glassLens";
 
 /**
  * Khoá của bảng `settings` mà nhiều trang cùng đọc.
@@ -16,8 +18,7 @@ export const CHROME_SETTING = {
   LOGO: "site_logo",
   ZALO: "float_zalo",
   ZALO_PHONE: "zalo_phone",
-  /** Hai dòng của thanh trên cùng (top bar) — sửa ở /admin/appearance/header. */
-  TOPBAR_ZALO: "topbar_zalo_text",
+  /** Dòng địa chỉ của thanh trên cùng (top bar) — sửa ở /admin/appearance/header. */
   TOPBAR_ADDRESS: "topbar_address_text",
 } as const;
 
@@ -70,6 +71,9 @@ const CHROME_TEXT = {
   BACKTOP: "Lên đầu trang",
   MESSENGER: "Messenger",
   ZALO: "Chat Zalo",
+  CONSULT: "Nhận tư vấn",
+  CONSULT_SUB: "Để lại số điện thoại, THE UNI sẽ gọi lại tư vấn và báo giá cho bạn.",
+  CLOSE: "Đóng",
   MAP: "BẢN ĐỒ",
   MST: "MST",
 } as const;
@@ -84,13 +88,17 @@ const POLICY_LINKS = [
 /** Giá trị dự phòng khi quản trị chưa điền ô tương ứng — giữ đúng chữ đang hiển thị. */
 const CHROME_FALLBACK = {
   CTA_LABEL: "PC BRAND",
-  TOPBAR_ZALO: "Đặt hàng liên hệ zalo: 0399.259.155",
   TOPBAR_ADDRESS: "Địa chỉ xưởng: K249/83/4 Hà Huy Tập - Thanh Khê - Đà Nẵng",
-  /** Nút góc phải header: đường chốt đơn chính của xưởng là Zalo. */
-  HEADER_CTA: "Báo giá Zalo",
-  FOOTER_COL1_TITLE: "ĐỒNG PHỤC",
-  FOOTER_COL2_TITLE: "PICKLEBALL",
+  /** Nút Zalo (header khi chưa có số Zalo, và chân drawer): đường chốt đơn chính của xưởng. */
+  ZALO_CTA: "Báo giá Zalo",
   LINK: "#",
+} as const;
+
+/** Cột mạng xã hội ở chân trang: giá trị dùng khi admin (Giao diện → Footer) để trống ô tương ứng. */
+export const FOOTER_SOCIAL_DEFAULT = {
+  TITLE: "MẠNG XÃ HỘI",
+  FACEBOOK: "https://www.facebook.com/kimduyenunisex/",
+  INSTAGRAM: "https://www.instagram.com/theuni.unisex/",
 } as const;
 
 const SEARCH_FORM = `<form action="/search" method="get" class="header-search-form uni-search" role="search">
@@ -177,38 +185,66 @@ const maybeLink = (href: string, cls: string, text: string) =>
     ? `<a class="${cls}" href="${esc(href)}" target="_blank" rel="noopener">${esc(text)}</a>`
     : `<span class="${cls}">${esc(text)}</span>`;
 
-/** Thanh trên cùng: dòng Zalo đặt hàng + dòng địa chỉ xưởng. Ẩn khi cuộn (ThemeJS gắn class). */
+/** Thanh trên cùng: dòng địa chỉ xưởng (số Zalo nằm ở nút bên phải header). Ẩn khi cuộn (ThemeJS gắn class). */
 function topbarHtml(s: Record<string, string>) {
-  const zaloText = s[CHROME_SETTING.TOPBAR_ZALO] || CHROME_FALLBACK.TOPBAR_ZALO;
   const addressText = s[CHROME_SETTING.TOPBAR_ADDRESS] || CHROME_FALLBACK.TOPBAR_ADDRESS;
   return `<div class="uni-topbar">
 		<div class="uni-topbar__inner">
-			${maybeLink(zaloChatUrl(s), "uni-topbar__item", zaloText)}
-			<span class="uni-topbar__sep" aria-hidden="true">/</span>
 			${maybeLink(mapSearchUrl(s.address || ""), "uni-topbar__item", addressText)}
 		</div>
 	</div>`;
 }
+
+/** "0399259155" -> "0399.259.155". Số không đủ 10 chữ số thì để nguyên. */
+const dottedPhone = (digits: string) =>
+  digits.length === 10 ? `${digits.slice(0, 4)}.${digits.slice(4, 7)}.${digits.slice(7)}` : digits;
+
+/** Chữ nút Zalo trên header: "Zalo <số>" để khách đọc được số ngay; chưa có số thì chữ chung. */
+function zaloCtaLabel(s: Record<string, string>) {
+  // Shop chỉ điền "Link Zalo" (zalo.me/<số>) mà chưa điền số thì đọc số từ link.
+  const phone =
+    (s[CHROME_SETTING.ZALO_PHONE] || "").replace(/\D/g, "") ||
+    ((s[CHROME_SETTING.ZALO] || "").split(ZALO_CHAT_BASE)[1] || "").replace(/\D/g, "");
+  return phone ? `Zalo ${dottedPhone(phone)}` : CHROME_FALLBACK.ZALO_CTA;
+}
+
+/**
+ * Viên kính trượt dưới mục menu đang xem / đang rê chuột (lib/navGlass.ts đặt vị trí). Ba mảnh
+ * l/m/r mang ba bộ lọc khúc xạ của lib/glassLens.ts. `mod`: class thêm cho viên kính của drawer.
+ */
+const glassHtml = (mod = "") => `<li class="${NAV_GLASS.CLASS}${mod ? ` ${mod}` : ""}" role="presentation" aria-hidden="true">
+	<span class="${NAV_GLASS.BODY_CLASS}">
+		<span class="uni-nav__glass-part uni-nav__glass-part--l"></span><span class="uni-nav__glass-part uni-nav__glass-part--m"></span><span class="uni-nav__glass-part uni-nav__glass-part--r"></span>
+		<span class="${NAV_GLASS.SHEEN_CLASS}"><i></i></span>
+	</span>
+</li>`;
 
 export function buildHeaderHtml(menus: MenuNode[], s: Record<string, string>) {
   const branding = storeBranding(s);
   const brand = esc(branding.brand);
   const logo = esc(branding.logo);
   const zalo = zaloChatUrl(s);
-  const cta = `<a class="uni-btn uni-btn--primary uni-btn--sm uni-btn--chat uni-header__cta" href="${esc(zalo || CHROME_FALLBACK.LINK)}" target="_blank" rel="noopener">${CHROME_FALLBACK.HEADER_CTA}</a>`;
+  const zaloHref = esc(zalo || CHROME_FALLBACK.LINK);
+  const headerCta = `<a class="uni-header__cta" href="${zaloHref}" target="_blank" rel="noopener">${esc(zaloCtaLabel(s))}</a>`;
+  const drawerCta = `<a class="uni-btn uni-btn--primary uni-btn--sm uni-btn--chat" href="${zaloHref}" target="_blank" rel="noopener">${CHROME_FALLBACK.ZALO_CTA}</a>`;
 
   return `<header class="uni-header">
+	${GLASS_LENS_DEFS}
 	${topbarHtml(s)}
 	<div class="uni-header__bar">
 		${brandLink(brand, logo)}
 		<nav class="uni-nav" aria-label="${CHROME_TEXT.NAV}">
-			<ul class="uni-nav__list">
+			<ul class="${NAV_GLASS.LIST_CLASS}" style="--uni-glass-h:${NAV_GLASS.H}px;--uni-glass-cap:${NAV_GLASS.CAP}px">
+${glassHtml()}
 ${navItems(menus)}
 			</ul>
 		</nav>
 		<div class="uni-header__actions">
-			<div class="uni-header__search">${SEARCH_FORM}</div>
-			${cta}
+			<div class="${HEADER_SEARCH.WRAP_CLASS}">
+				<a class="uni-header__icon" href="/search" role="button" ${HEADER_SEARCH.TOGGLE_ATTR} aria-expanded="false" aria-label="${CHROME_TEXT.SEARCH}">${SEARCH_SVG}</a>
+				<div class="uni-header__search-pop">${SEARCH_FORM}</div>
+			</div>
+			${headerCta}
 			<button type="button" class="uni-burger" ${DRAWER.OPEN_ATTR} aria-controls="${DRAWER.ID}" aria-expanded="false" aria-label="${CHROME_TEXT.OPEN_NAV}"><span></span><span></span><span></span></button>
 		</div>
 	</div>
@@ -220,10 +256,11 @@ ${navItems(menus)}
 		<button type="button" class="uni-drawer__close" ${DRAWER.CLOSE_ATTR} aria-label="${CHROME_TEXT.CLOSE_NAV}">&times;</button>
 	</div>
 	<div class="uni-drawer__search">${SEARCH_FORM}</div>
-	<ul class="uni-drawer__nav">
+	<ul class="${DRAWER_GLASS.LIST_CLASS}" style="--uni-glass-h:${DRAWER_GLASS.H}px;--uni-glass-cap:${DRAWER_GLASS.CAP}px">
+${glassHtml(DRAWER_GLASS.MOD_CLASS)}
 ${drawerItems(menus)}
 	</ul>
-	<div class="uni-drawer__foot">${cta}</div>
+	<div class="uni-drawer__foot">${drawerCta}</div>
 </aside>`;
 }
 
@@ -262,7 +299,25 @@ function footerSocialCol(col: {
 
 const BACKTOP_SVG = `<svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="angle-up" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" class="svg-inline--fa fa-angle-up fa-w-10"><path fill="currentColor" d="M168.5 164.2l148 146.8c4.7 4.7 4.7 12.3 0 17l-19.8 19.8c-4.7 4.7-12.3 4.7-17 0L160 229.3 40.3 347.8c-4.7 4.7-12.3 4.7-17 0L3.5 328c-4.7-4.7-4.7-12.3 0-17l148-146.8c4.7-4.7 12.3-4.7 17 0z" class=""></path></svg>`;
 
-// Nút liên hệ nổi (Messenger + Zalo + gọi điện + lên đầu trang) — từ settings
+/** Icon nút mở form tư vấn: tờ phiếu có bút (nét, ăn theo màu chữ). */
+const CONSULT_SVG = `<svg class="uni-float__icon" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6.5A2.5 2.5 0 0 0 4 5.5v13A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V11"/><path d="M8 8h5M8 12h3M8 16h7"/><path d="M18.4 2.6a1.9 1.9 0 0 1 2.7 2.7l-6.4 6.4-3.4.7.7-3.4z"/></svg>`;
+
+/**
+ * Popup form tư vấn (<dialog> mở dạng modal: Esc đóng, khoá focus trong popup). Mở từ nút nổi
+ * `[data-consult-open]`; components/ThemeJS.tsx mở/đóng và đóng sau khi gửi thành công.
+ */
+function consultDialogHtml() {
+  return `<dialog class="uni-consult" id="${CONSULT.DIALOG_ID}" aria-labelledby="${CONSULT.DIALOG_ID}-title">
+	<div class="uni-consult__card">
+		<button type="button" class="uni-consult__close" ${CONSULT.CLOSE_ATTR} aria-label="${CHROME_TEXT.CLOSE}">&times;</button>
+		<h2 class="uni-consult__title" id="${CONSULT.DIALOG_ID}-title">${CONSULT_TEXT.TITLE}</h2>
+		<p class="uni-consult__sub">${CHROME_TEXT.CONSULT_SUB}</p>
+		${consultFormHtml(CONSULT_TEXT.SUBMIT, true)}
+	</div>
+</dialog>`;
+}
+
+// Nút liên hệ nổi (form tư vấn + Messenger + Zalo + gọi điện + lên đầu trang) — từ settings
 export function buildFloatingHtml(s: Record<string, string>) {
   const phone = s.float_phone || "";
   const tel = phone.replace(/\s/g, "");
@@ -272,7 +327,14 @@ export function buildFloatingHtml(s: Record<string, string>) {
 	<span class="uni-float__label">${esc(label)}</span>
 </a>`;
 
-  return `<div class="uni-float">
+  const consult = `<button type="button" class="uni-float__btn uni-float__btn--consult" ${CONSULT.OPEN_ATTR} aria-haspopup="dialog" aria-controls="${CONSULT.DIALOG_ID}" title="${CHROME_TEXT.CONSULT}">
+	${CONSULT_SVG}
+	<span class="uni-float__label">${CHROME_TEXT.CONSULT}</span>
+</button>`;
+
+  return `${consultDialogHtml()}
+<div class="uni-float">
+${consult}
 ${s.float_messenger ? button("uni-float__btn--messenger", s.float_messenger, "/theme/icon-menu-right1.png", CHROME_TEXT.MESSENGER, true) : ""}
 ${s[CHROME_SETTING.ZALO] ? button("uni-float__btn--zalo", s[CHROME_SETTING.ZALO], "/theme/icon-menu-right2.png", CHROME_TEXT.ZALO, true) : ""}
 ${phone ? button("uni-float__btn--phone", `tel:${tel}`, "/theme/icon-menu-right3.png", phone, false) : ""}
@@ -287,7 +349,7 @@ export function buildFooterHtml(s: Record<string, string>) {
   const policies = POLICY_LINKS.map(
     (p) => `<li><a href="${p.href}" title="${p.label}">${p.label}</a></li>`
   ).join("");
-  // Nút "BY KIMDUYÊN" (pcbrand_*) trước nằm ở header — header giờ dành cho nút báo giá Zalo.
+  // Nút "BY KIMDUYÊN" (pcbrand_*) trước nằm ở header, giờ xuống chân trang.
   const partner = s.pcbrand_url
     ? `\n\t\t\t\t<p class="uni-footer__partner"><a href="${esc(s.pcbrand_url)}" target="_blank" rel="noopener">${esc(s.pcbrand_label || CHROME_FALLBACK.CTA_LABEL)}</a></p>`
     : "";
@@ -318,20 +380,12 @@ export function buildFooterHtml(s: Record<string, string>) {
 			</div>
 ${map}
 ${footerSocialCol({
-    title: s.footer_col1_title || CHROME_FALLBACK.FOOTER_COL1_TITLE,
-    facebook: s.footer_col1_facebook || CHROME_FALLBACK.LINK,
-    instagram: s.footer_col1_instagram || CHROME_FALLBACK.LINK,
+    title: s.footer_col1_title || FOOTER_SOCIAL_DEFAULT.TITLE,
+    facebook: s.footer_col1_facebook || FOOTER_SOCIAL_DEFAULT.FACEBOOK,
+    instagram: s.footer_col1_instagram || FOOTER_SOCIAL_DEFAULT.INSTAGRAM,
     mail: s.footer_col1_mail || s.email || "",
     fanpageImg: s.footer_col1_fanpage_img || "",
     fanpageLink: s.footer_col1_fanpage_link || CHROME_FALLBACK.LINK,
-  })}
-${footerSocialCol({
-    title: s.footer_col2_title || CHROME_FALLBACK.FOOTER_COL2_TITLE,
-    facebook: s.footer_col2_facebook || CHROME_FALLBACK.LINK,
-    instagram: s.footer_col2_instagram || CHROME_FALLBACK.LINK,
-    mail: s.footer_col2_mail || s.email || "",
-    fanpageImg: s.footer_col2_fanpage_img || "",
-    fanpageLink: s.footer_col2_fanpage_link || CHROME_FALLBACK.LINK,
   })}
 		</div>
 		<div class="uni-footer__bottom">&copy; ${new Date().getFullYear()} ${esc(s.company_name) || brand}</div>

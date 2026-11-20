@@ -4,7 +4,7 @@
 import { db } from "@/lib/db";
 import { CHROME_SETTING, zaloChatUrl } from "@/lib/chromeHtml";
 import { SECTOR_SLUGS, sectionText, type HomeLayout } from "@/lib/homeSections";
-import { tiktokVideoId } from "@/lib/tiktok";
+import { tiktokVideo } from "@/lib/tiktok";
 
 /** Slider "Trang chủ" = chưa gắn trang nào (Slider.page trống; bản ghi cũ thiếu hẳn trường). */
 const HOME_SLIDER_WHERE = {
@@ -13,7 +13,7 @@ const HOME_SLIDER_WHERE = {
 };
 
 export async function loadHomeData(layout: HomeLayout) {
-  const [sliders, banners, types, brands, testimonials, featured, sectors, settings, tiktokId] =
+  const [sliders, banners, types, brands, testimonials, featured, sectors, settings, tiktok] =
     await Promise.all([
       db.slider.findMany({ where: HOME_SLIDER_WHERE, orderBy: { position: "asc" } }),
       db.banner.findMany({ where: { isActive: true }, orderBy: { position: "asc" } }),
@@ -34,7 +34,7 @@ export async function loadHomeData(layout: HomeLayout) {
           key: { in: [CHROME_SETTING.ZALO, CHROME_SETTING.ZALO_PHONE, "hotline", "float_phone", "site_logo"] },
         },
       }),
-      tiktokVideoId(sectionText(layout, "intro", "tiktok")),
+      tiktokVideo(sectionText(layout, "intro", "tiktok")),
     ]);
 
   // không có bài ghim thì lấy bài mới nhất
@@ -57,7 +57,7 @@ export async function loadHomeData(layout: HomeLayout) {
       posts,
       sectors,
       contact: { zalo: zaloChatUrl(s), phone: s.hotline || s.float_phone || "" },
-      tiktokId,
+      tiktok,
     },
     settings: s,
   };

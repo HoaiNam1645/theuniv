@@ -19,7 +19,6 @@ export const dynamic = "force-dynamic";
 /** Mức ưu tiên tương đối giữa các loại trang — chỉ là gợi ý cho crawler. */
 const PRIORITY = {
   home: 1,
-  blogIndex: 0.8,
   article: 0.7,
   productType: 0.8,
   product: 0.6,
@@ -27,15 +26,11 @@ const PRIORITY = {
 } as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [articles, blogCats, types, products, pages, categories] = await Promise.all([
+  const [articles, types, products, pages, categories] = await Promise.all([
     db.article.findMany({
       where: { status: "published" },
       select: { slug: true, updatedAt: true, publishedAt: true },
       orderBy: { publishedAt: "desc" },
-    }),
-    db.articleCategory.findMany({
-      where: { isActive: true },
-      select: { id: true, slug: true },
     }),
     db.productType.findMany({ select: { slug: true } }),
     db.product.findMany({
@@ -45,14 +40,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     db.page.findMany({ where: { status: "published" }, select: { slug: true, updatedAt: true } }),
     db.category.findMany({ where: { isActive: true }, select: { slug: true, updatedAt: true } }),
   ]);
-
-  // Chuyên mục blog chỉ vào sitemap khi thực sự có bài đã đăng.
-  const catCounts = await Promise.all(
-    blogCats.map((c) =>
-      db.article.count({ where: { articleCategoryId: c.id, status: "published" } }),
-    ),
-  );
-  const usedBlogCats = blogCats.filter((_, i) => catCounts[i] > 0);
 
   const now = new Date();
   const entry = (
@@ -67,7 +54,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: SITE_URL, lastModified: now, priority: PRIORITY.home },
-    ...usedBlogCats.map((c) => entry(`/${c.slug}`, null, PRIORITY.blogIndex)),
     ...articles.map((a) => entry(`/${a.slug}`, a.updatedAt ?? a.publishedAt, PRIORITY.article)),
     ...types.map((t) => entry(`/${t.slug}`, null, PRIORITY.productType)),
     ...categories.map((c) => entry(`/${c.slug}`, c.updatedAt, PRIORITY.productType)),

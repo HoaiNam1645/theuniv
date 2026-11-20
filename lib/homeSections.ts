@@ -89,7 +89,7 @@ export const BANNER_SLOT = {
 } as const;
 
 /** Số ảnh hero cố định (ảnh thêm thì vào tab Slider, chọn "Trang chủ"). */
-export const HERO_SLOT_COUNT = 2;
+export const HERO_SLOT_COUNT = 1;
 /** Số ô ảnh khối "Từ maket đến thành phẩm": ô 1 là ảnh lớn bên trái. */
 export const SHOWCASE_SLOT_COUNT = 5;
 
@@ -158,14 +158,12 @@ export const HOME_SECTIONS: HomeSection[] = [
   {
     id: "hero",
     label: "Banner đầu trang",
-    note: "Ảnh tràn ngang trên cùng, tự chuyển. Gồm 2 ảnh dưới đây + các slider chọn \"Trang chủ\" ở tab Slider. Ảnh điện thoại để trống thì dùng ảnh máy tính",
+    note: "Ảnh tràn ngang trên cùng. Gồm ảnh dưới đây + các slider chọn \"Trang chủ\" ở tab Slider (có từ 2 ảnh thì tự chuyển). Ảnh điện thoại để trống thì dùng ảnh máy tính",
     texts: [],
     media: SECTION_MEDIA.BANNER_SLOTS,
     slots: [
-      { slot: BANNER_SLOT.hero(1), label: "Ảnh 1", hint: "Khổ ngang ~2400×900" },
-      { slot: BANNER_SLOT.heroMobile(1), label: "Ảnh 1 — điện thoại", hint: "Khổ dọc ~1080×1350 (tuỳ chọn)" },
-      { slot: BANNER_SLOT.hero(2), label: "Ảnh 2", hint: "Khổ ngang ~2400×900" },
-      { slot: BANNER_SLOT.heroMobile(2), label: "Ảnh 2 — điện thoại", hint: "Khổ dọc ~1080×1350 (tuỳ chọn)" },
+      { slot: BANNER_SLOT.hero(1), label: "Ảnh banner", hint: "Khổ ngang ~2400×900" },
+      { slot: BANNER_SLOT.heroMobile(1), label: "Ảnh banner — điện thoại", hint: "Khổ dọc ~1080×1350 (tuỳ chọn)" },
     ],
   },
   {
@@ -197,14 +195,13 @@ export const HOME_SECTIONS: HomeSection[] = [
       { key: "point1", label: "Cam kết 1", default: "Thiết kế maket miễn phí" },
       { key: "point2", label: "Cam kết 2", default: "Sản xuất theo yêu cầu, đa dạng sản phẩm" },
       { key: "point3", label: "Cam kết 3", default: "Chất lượng cao, đúng tiến độ" },
-      { key: "ctaQuote", label: "Nút Zalo", default: "Báo giá qua Zalo" },
       { key: "ctaCall", label: "Nút gọi điện", default: "Gọi xưởng" },
       {
         key: "tiktok",
         label: "Link video TikTok (link rút gọn vt.tiktok.com hoặc link đầy đủ)",
         default: "https://www.tiktok.com/@xuonginaodanang/video/7642606504691928327",
       },
-      { key: "videoLink", label: "Chữ link dưới video", default: "Xem trên TikTok" },
+      { key: "videoLink", label: "Chữ link dưới video", default: "TikTok" },
     ],
     media: SECTION_MEDIA.NONE,
   },

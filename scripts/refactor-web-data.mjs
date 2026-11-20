@@ -184,7 +184,6 @@ async function sliders() {
 const HOME_BANNERS = [
   // buttonText: hero -> chữ thay thế (alt) của ảnh; khối dự án -> chú thích dưới ảnh.
   { slot: "home_hero_1", image: "/brand/hero-giai-phap-dong-phuc.jpg", link: "/dong-phuc-doanh-nghiep", buttonText: "THE UNI — giải pháp quà tặng và đồng phục doanh nghiệp" },
-  { slot: "home_hero_2", image: "/brand/hero-xuong-san-xuat.jpg", link: "/lien-he", buttonText: "THE UNI — xưởng sản xuất đồng phục" },
   { slot: "home_phoi", image: "/brand/phoi-san-xuat-bang-mau.jpg", link: "/bang-mau-vai", buttonText: null },
   { slot: "home_showcase_1", image: "/brand/vi-huong-bo-dong-phuc.jpg", link: "/dong-phuc-hang-quan-an", buttonText: "Ảnh thật: bộ đồng phục nhà hàng Vị Hương" },
   { slot: "home_showcase_2", image: "/brand/vi-huong-polo-co-tau-maket.jpg", link: "/ao-polo-co-tau-vi-huong", buttonText: "Maket polo cổ tàu" },

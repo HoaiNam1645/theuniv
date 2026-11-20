@@ -37,6 +37,58 @@ export const FILTER = {
 export const NAV_LINK_ATTR = "data-nav-link";
 export const NAV_ITEM_ATTR = "data-nav-item";
 
+/**
+ * Viên kính trượt của menu ngang (lib/chromeHtml.ts dựng, lib/navGlass.ts điều khiển,
+ * site-layout.css vẽ). `H` và `CAP` là số px thật: bản đồ khúc xạ của bộ lọc SVG vẽ đúng theo khổ
+ * này, nên CSS đọc lại qua biến --uni-glass-h / --uni-glass-cap thay vì tự ghi số.
+ */
+export const NAV_GLASS = {
+  LIST_CLASS: "uni-nav__list",
+  CLASS: "uni-nav__glass",
+  BODY_CLASS: "uni-nav__glass-body",
+  SHEEN_CLASS: "uni-nav__glass-sheen",
+  /** id bộ lọc khúc xạ cho đầu trái, thân giữa, đầu phải của viên kính. */
+  LENS: { LEFT: "uni-lens-l", MID: "uni-lens-m", RIGHT: "uni-lens-r" },
+  H: 42,
+  CAP: 21,
+  /** Kính đang hiện (đã có mục để đậu). */
+  ON_STATE: "is-on",
+  /** Đặt vị trí tức thì, không chạy chuyển động. */
+  SNAP_STATE: "is-snap",
+  /** Con trỏ đang ở trong menu: kính nhấc lên, trong hơn, bóng sâu hơn. */
+  LIFT_STATE: "is-lifted",
+  /** Trình duyệt vẽ được khúc xạ: kính nằm TRÊN chữ. */
+  LENS_STATE: "has-lens",
+  /** Mục menu đang nằm dưới kính. */
+  ITEM_STATE: "is-under-glass",
+} as const;
+
+/**
+ * Viên kính trượt trong drawer (menu di động): cùng hình và cùng cách điều khiển với NAV_GLASS, khác
+ * hướng trượt (dọc) và khổ (mục drawer cao 48px để dễ chạm), nên có bộ lọc khúc xạ riêng.
+ */
+export const DRAWER_GLASS = {
+  LIST_CLASS: "uni-drawer__nav",
+  /** Class thêm vào viên kính của drawer (CSS đổi bộ lọc và cách đặt vị trí). */
+  MOD_CLASS: "uni-nav__glass--drawer",
+  LENS: { LEFT: "uni-dlens-l", MID: "uni-dlens-m", RIGHT: "uni-dlens-r" },
+  H: 48,
+  CAP: 24,
+} as const;
+
+/** Popup form nhận tư vấn, mở từ nút nổi (lib/chromeHtml.ts dựng, components/ThemeJS.tsx mở/đóng). */
+export const CONSULT = {
+  DIALOG_ID: "uni-consult",
+  OPEN_ATTR: "data-consult-open",
+  CLOSE_ATTR: "data-consult-close",
+} as const;
+
+/** Ô tìm kiếm trên header: nút kính lúp mở khung nhập. */
+export const HEADER_SEARCH = {
+  WRAP_CLASS: "uni-header__search",
+  TOGGLE_ATTR: "data-search-toggle",
+} as const;
+
 /** Class trạng thái gắn lên phần tử — public/css/site-layout.css đọc đúng các tên này. */
 export const STATE_CLASS = {
   OPEN: "is-open",
