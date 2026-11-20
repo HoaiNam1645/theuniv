@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import RawPage from "@/components/RawPage";
 import HomeSwipers from "@/components/HomeSwipers";
+import HomeFlow from "@/components/HomeFlow";
 import { getSession } from "@/lib/auth";
 import { buildHomeHtml } from "@/lib/homeHtml";
 import { readHomeDraft } from "@/lib/homeLayout";
@@ -35,6 +36,7 @@ export default async function HomeDraftPreview() {
     <>
       <RawPage html={html} />
       <HomeSwipers />
+      <HomeFlow />
     </>
   );
 }

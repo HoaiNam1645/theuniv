@@ -101,7 +101,7 @@ export const SECTOR_SLUGS = [
   "dong-phuc-spa-nail",
 ] as const;
 
-/** 6 năng lực in trên banner "Xưởng sản xuất đồng phục" — key chữ + icon (lib/homeHtml.ts). */
+/** 6 thẻ năng lực của khối "năng lực + quy trình" — key chữ + icon (lib/homeHtml.ts). */
 export const SERVICE_KEYS = ["s1", "s2", "s3", "s4", "s5", "s6"] as const;
 /** 5 bước quy trình đặt hàng. */
 export const PROCESS_STEPS = [1, 2, 3, 4, 5] as const;
@@ -208,15 +208,33 @@ export const HOME_SECTIONS: HomeSection[] = [
   {
     id: "services",
     label: "Năng lực sản xuất",
-    note: "6 ô icon + tên dịch vụ, nền xanh nhạt",
+    note: "Nửa TRÁI của khối chung với \"Quy trình đặt hàng\" (nền kem ánh vàng): 6 thẻ icon + tên sản phẩm, không có tiêu đề. Điện thoại: nằm trên, quy trình nằm dưới. Ẩn \"Quy trình đặt hàng\" thì 6 thẻ trải hết bề ngang",
     texts: [
-      { key: "heading", label: "Tiêu đề", default: "Xưởng nhận sản xuất" },
-      { key: "s1", label: "Ô 1", default: "Đồng phục doanh nghiệp" },
-      { key: "s2", label: "Ô 2", default: "Áo thun sự kiện" },
-      { key: "s3", label: "Ô 3", default: "Đồng phục CLB - team" },
-      { key: "s4", label: "Ô 4", default: "Mũ nón đồng phục" },
-      { key: "s5", label: "Ô 5", default: "Quà tặng thương hiệu" },
-      { key: "s6", label: "Ô 6", default: "In - thêu theo yêu cầu" },
+      { key: "s1", label: "Thẻ 1", default: "Đồng phục doanh nghiệp" },
+      { key: "s2", label: "Thẻ 2", default: "Áo thun sự kiện" },
+      { key: "s3", label: "Thẻ 3", default: "Đồng phục CLB - team" },
+      { key: "s4", label: "Thẻ 4", default: "Mũ nón đồng phục" },
+      { key: "s5", label: "Thẻ 5", default: "Quà tặng thương hiệu" },
+      { key: "s6", label: "Thẻ 6", default: "In - thêu theo yêu cầu" },
+    ],
+    media: SECTION_MEDIA.NONE,
+  },
+  {
+    id: "process",
+    label: "Quy trình đặt hàng",
+    note: "Nửa PHẢI của khối chung với \"Năng lực sản xuất\": tiêu đề + 5 thẻ bước đánh số, lần lượt sáng lên. Khối nằm ở chỗ của section nào đứng trước; ẩn \"Năng lực sản xuất\" thì quy trình trải hết bề ngang",
+    texts: [
+      { key: "heading", label: "Tiêu đề", default: "Quy trình đặt hàng" },
+      { key: "t1", label: "Bước 1", default: "Tư vấn" },
+      { key: "d1", label: "Bước 1 — mô tả", default: "Nhắn Zalo loại áo, số lượng và logo." },
+      { key: "t2", label: "Bước 2", default: "Thiết kế maket" },
+      { key: "d2", label: "Bước 2 — mô tả", default: "Xưởng gửi maket miễn phí để bạn xem trước." },
+      { key: "t3", label: "Bước 3", default: "Duyệt mẫu" },
+      { key: "d3", label: "Bước 3 — mô tả", default: "Chốt màu vải, size và vị trí in thêu." },
+      { key: "t4", label: "Bước 4", default: "Sản xuất" },
+      { key: "d4", label: "Bước 4 — mô tả", default: "In, thêu và may tại xưởng." },
+      { key: "t5", label: "Bước 5", default: "Giao hàng" },
+      { key: "d5", label: "Bước 5 — mô tả", default: "Kiểm hàng và giao đúng hẹn." },
     ],
     media: SECTION_MEDIA.NONE,
   },
@@ -262,25 +280,6 @@ export const HOME_SECTIONS: HomeSection[] = [
       { slot: BANNER_SLOT.showcase(4), label: "Ảnh nhỏ 3", hint: "Khổ 3:2 hoặc vuông" },
       { slot: BANNER_SLOT.showcase(5), label: "Ảnh nhỏ 4", hint: "Khổ 3:2 hoặc vuông" },
     ],
-  },
-  {
-    id: "process",
-    label: "Quy trình đặt hàng",
-    note: "5 bước đánh số trên nền xanh đậm",
-    texts: [
-      { key: "heading", label: "Tiêu đề", default: "Quy trình đặt hàng" },
-      { key: "t1", label: "Bước 1", default: "Tư vấn" },
-      { key: "d1", label: "Bước 1 — mô tả", default: "Nhắn Zalo loại áo, số lượng và logo." },
-      { key: "t2", label: "Bước 2", default: "Thiết kế maket" },
-      { key: "d2", label: "Bước 2 — mô tả", default: "Xưởng gửi maket miễn phí để bạn xem trước." },
-      { key: "t3", label: "Bước 3", default: "Duyệt mẫu" },
-      { key: "d3", label: "Bước 3 — mô tả", default: "Chốt màu vải, size và vị trí in thêu." },
-      { key: "t4", label: "Bước 4", default: "Sản xuất" },
-      { key: "d4", label: "Bước 4 — mô tả", default: "In, thêu và may tại xưởng." },
-      { key: "t5", label: "Bước 5", default: "Giao hàng" },
-      { key: "d5", label: "Bước 5 — mô tả", default: "Kiểm hàng và giao đúng hẹn." },
-    ],
-    media: SECTION_MEDIA.NONE,
   },
   {
     id: "danhmuc",

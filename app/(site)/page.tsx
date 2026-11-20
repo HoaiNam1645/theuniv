@@ -1,5 +1,6 @@
 import RawPage from "@/components/RawPage";
 import HomeSwipers from "@/components/HomeSwipers";
+import HomeFlow from "@/components/HomeFlow";
 import { buildHomeHtml } from "@/lib/homeHtml";
 import { readHomeLayout } from "@/lib/homeLayout";
 import { loadHomeData } from "@/lib/homeData";
@@ -31,6 +32,7 @@ export default async function Home() {
       />
       <RawPage html={html} />
       <HomeSwipers />
+      <HomeFlow />
     </>
   );
 }

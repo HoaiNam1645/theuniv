@@ -6,12 +6,12 @@
    ========================================================================== */
 
 /* Thứ tự section do admin quyết: hai khối nền trắng liền nhau ngăn bằng đường kẻ; khối có nền
-   màu (--sage, --green) tự tách nên không cần kẻ. */
+   màu (--sage, .home-flow) tự tách nên không cần kẻ. */
 .home-section + .home-section { border-top: 1px solid var(--uni-line); }
 .home-section--sage,
-.home-section--green,
+.home-flow,
 .home-section--sage + .home-section,
-.home-section--green + .home-section { border-top: 0; }
+.home-flow + .home-section { border-top: 0; }
 
 /* Tiêu đề section trang chủ vẫn viết hoa như trước — vài tiêu đề mặc định gõ chữ thường.
    Chia dòng đều để tiêu đề dài không để một chữ lẻ rơi xuống dòng cuối. */
@@ -269,11 +269,10 @@ a.home-logo:hover { border-color: var(--c-primary); }
 
 /* ==========================================================================
    TRANG CHỦ XƯỞNG (refactor-web) — markup ở lib/homeHtml.ts (khối "TRANG CHỦ KIỂU XƯỞNG").
-   Nhịp nền: trắng → sage nhạt → trắng → xanh đậm; phẳng, không bóng, không gradient.
+   Phần lớn khối phẳng, không bóng, không gradient; riêng khối giới thiệu và khối "năng lực + quy trình"
+   theo bản thiết kế nền xám ấm / thẻ kính.
    ========================================================================== */
 .home-section--sage { background: var(--c-sage-soft); }
-.home-section--green { color: var(--c-on-primary); background: var(--c-primary); }
-.home-section--green .uni-section-head__title { color: var(--c-on-primary); }
 
 /* ---------- Hero tràn ngang ---------- */
 .home-hero--full { padding: 0; }
@@ -403,38 +402,6 @@ a.home-logo:hover { border-color: var(--c-primary); }
 .home-video__link::after { content: " \2197"; }
 .home-video__link:hover { color: var(--intro-ink); text-decoration: underline; }
 
-/* ---------- Năng lực sản xuất: lưới 6 ô, kẻ 1px bằng khe lưới ---------- */
-.home-services {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 1px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  background: var(--uni-line);
-  border: 1px solid var(--uni-line);
-}
-.home-service {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 32px 16px;
-  text-align: center;
-  background: var(--c-bg);
-}
-.home-service__icon { display: flex; color: var(--c-primary); }
-/* product_style.scss.css của theme ép mọi svg 20×20. */
-.home-service__icon svg { width: 40px; height: 40px; }
-.home-service__name {
-  font-size: 14.5px;
-  font-weight: 700;
-  line-height: 1.35;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--c-primary);
-}
-
 /* ---------- Đồng phục theo lĩnh vực ---------- */
 .home-sectors { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
 .home-sector {
@@ -515,36 +482,8 @@ a.home-logo:hover { border-color: var(--c-primary); }
   border-top: 1px solid var(--uni-line);
 }
 
-/* ---------- Quy trình đặt hàng ---------- */
-.home-steps {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
-}
-.home-step { padding: 28px 24px 8px 0; }
-.home-step + .home-step { padding-left: 24px; border-left: 1px solid rgba(255, 255, 255, 0.25); }
-.home-step__num { display: block; margin-bottom: 16px; font-size: 40px; font-weight: 700; line-height: 1; color: var(--c-gold); }
-.home-step__title { margin: 0 0 8px; font-size: 18px; font-weight: 700; line-height: 1.3; text-transform: none; color: var(--c-on-primary); }
-.home-step__desc { margin: 0; font-size: 14.5px; line-height: 1.6; color: rgba(255, 255, 255, 0.85); }
-
 @media (max-width: 1024px) {
-  .home-services { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .home-sectors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  /* Quy trình: mỗi bước một hàng — số bên trái, chữ bên phải. */
-  .home-steps { grid-template-columns: 1fr; }
-  .home-step,
-  .home-step + .home-step {
-    display: grid;
-    grid-template-columns: 72px minmax(0, 1fr);
-    column-gap: 16px;
-    padding: 20px 0;
-    border-left: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-  }
-  .home-step__num { grid-row: span 2; margin: 0; font-size: 34px; }
 }
 
 @media (max-width: 900px) {
@@ -559,9 +498,6 @@ a.home-logo:hover { border-color: var(--c-primary); }
   .home-intro__body { font-size: 16px; }
   .home-intro__points li { font-size: 16px; }
   .home-intro__call { width: 100%; justify-content: center; }
-  .home-service { gap: 10px; padding: 22px 10px; }
-  .home-service__icon svg { width: 32px; height: 32px; }
-  .home-service__name { font-size: 12.5px; }
   .home-sectors { gap: 10px; }
   .home-sector__body { padding: 12px; gap: 6px; }
   .home-sector__name { font-size: 15px; }
@@ -574,6 +510,189 @@ a.home-logo:hover { border-color: var(--c-primary); }
   .home-shot__cap { padding: 8px 10px; font-size: 12.5px; }
 }
 
+/* ==========================================================================
+   Khối "năng lực + quy trình" — bản thiết kế "Services Process Options". Markup: sectionFlow ở
+   lib/homeHtml.ts. Nền kem có quầng vàng góc trên phải; trái 6 thẻ kính (icon + tên chữ hẹp), phải
+   tiêu đề + 5 thẻ bước. Cùng bộ màu xám ấm / vàng với khối giới thiệu (.home-intro) ngay phía trên.
+   Class trạng thái (is-armed / is-inview / is-live / is-active / is-done) do components/HomeFlow.tsx
+   gắn — không có JS thì khối đứng yên, đủ chữ, mọi số đều vàng.
+   ========================================================================== */
+.home-flow {
+  --flow-ink: #242528;
+  --flow-muted: #45464a;
+  --flow-gold: #a67c12;
+  --flow-card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.5));
+  --flow-card-shadow: 0 14px 28px rgba(36, 37, 40, 0.1), 0 2px 4px rgba(36, 37, 40, 0.07), inset 0 2px 1px #fff, inset 0 -4px 8px rgba(36, 37, 40, 0.06);
+  --flow-radius: 26px;
+  --flow-gap: 12px;
+  padding-block: clamp(48px, 6vw, 80px);
+  color: var(--flow-ink);
+  background:
+    radial-gradient(circle at 92% 10%, #f1dc9c 0, rgba(241, 220, 156, 0) 36%),
+    radial-gradient(circle at 6% 92%, #d8d6cf 0, rgba(216, 214, 207, 0) 45%),
+    #eeede9;
+}
+.home-flow__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(28px, 4.5vw, 56px); }
+/* Admin ẩn một nửa: nửa còn lại trải hết bề ngang. */
+.home-flow__grid:has(> .home-flow__col:only-child) { grid-template-columns: minmax(0, 1fr); }
+.home-flow__col { display: flex; flex-direction: column; gap: clamp(18px, 2.2vw, 28px); min-width: 0; }
+.home-flow__title {
+  margin: 0;
+  font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(38px, 4.2vw, 52px);
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--flow-ink);
+}
+
+/* Thẻ kính dùng chung cho thẻ năng lực và thẻ bước. */
+.home-service,
+.home-step {
+  position: relative;
+  background: var(--flow-card-bg);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: var(--flow-radius);
+  box-shadow: var(--flow-card-shadow);
+}
+
+/* ---------- Trái: 6 thẻ năng lực, 2 cột, giãn cao bằng cột quy trình ---------- */
+.home-services {
+  display: grid;
+  flex-grow: 1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(140px, 1fr);
+  gap: var(--flow-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.home-flow__col:only-child .home-services { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.home-service {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px;
+  transition: transform var(--uni-ease), box-shadow var(--uni-ease);
+}
+.home-service__icon { display: flex; color: var(--flow-ink); }
+/* product_style.scss.css của theme ép mọi svg 20×20. */
+.home-service__icon svg { width: 48px; height: 48px; }
+.home-service__name {
+  font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(20px, 2.1vw, 27px);
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--flow-ink);
+}
+@media (hover: hover) {
+  .home-service:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 36px rgba(36, 37, 40, 0.13), 0 3px 6px rgba(36, 37, 40, 0.08), inset 0 2px 1px #fff, inset 0 -4px 8px rgba(36, 37, 40, 0.06);
+  }
+}
+
+/* ---------- Phải: 5 thẻ bước ---------- */
+.home-steps { display: flex; flex-direction: column; gap: var(--flow-gap); margin: 0; padding: 0; list-style: none; }
+.home-step {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr);
+  align-items: center;
+  padding: 14px 24px;
+  overflow: hidden;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease, border-color 0.5s ease;
+}
+/* Hai lớp phủ của thẻ đang tới lượt: ::before ánh vàng hiện dần, ::after vệt sáng lướt ngang mặt kính. */
+.home-step::before,
+.home-step::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+.home-step::before {
+  background: linear-gradient(100deg, rgba(246, 222, 150, 0.75), rgba(255, 246, 214, 0.35) 60%, rgba(255, 255, 255, 0));
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.home-step::after {
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 62%);
+  transform: translateX(-110%);
+}
+.home-step__num,
+.home-step__body { position: relative; z-index: 1; }
+.home-step__num {
+  font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--flow-gold);
+  transform-origin: left center;
+  transition: color 0.5s ease;
+}
+.home-step__body { display: flex; flex-direction: column; gap: 2px; }
+.home-step__title { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4; text-transform: none; color: var(--flow-ink); }
+.home-step__desc { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--flow-muted); }
+
+/* Vòng lặp đang chạy: số của bước chưa tới lượt nhạt đi (vẫn đọc được), bước đã qua giữ số vàng, bước
+   đang tới lượt nhích sang phải, ngả vàng, viền vàng, có vệt sáng lướt qua một lần. */
+.home-flow .is-live .home-step:not(.is-active):not(.is-done) .home-step__num { color: #b9b6ac; }
+.home-flow .is-live .home-step.is-active {
+  transform: translateX(10px);
+  border-color: rgba(214, 170, 60, 0.75);
+  box-shadow: 0 18px 34px rgba(166, 124, 18, 0.2), 0 2px 4px rgba(36, 37, 40, 0.07), inset 0 2px 1px #fff, inset 0 -4px 8px rgba(166, 124, 18, 0.1);
+}
+.home-flow .is-live .home-step.is-active::before { opacity: 1; }
+.home-flow .is-live .home-step.is-active::after { animation: home-step-sheen 1.1s 0.1s ease-out; }
+.home-flow .is-live .home-step.is-active .home-step__num { animation: home-step-pop 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes home-step-sheen {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(110%); }
+}
+@keyframes home-step-pop {
+  from { transform: scale(0.82); }
+  60% { transform: scale(1.12); }
+  to { transform: scale(1); }
+}
+
+/* Hiện lần lượt khi cuộn tới (--i đặt sẵn trong markup): thẻ năng lực nổi lên, icon vẽ nét dần; tiêu
+   đề và thẻ bước trượt từ phải vào. Dùng animation (không phải transition) để độ trễ theo --i chỉ áp
+   cho lần hiện này, không dính vào chuyển động của vòng lặp phía trên. */
+.home-flow__col.is-armed:not(.is-inview) :is(.home-flow__title, .home-service, .home-step) { opacity: 0; }
+.home-flow__col.is-armed.is-inview .home-service { animation: home-flow-rise 0.8s calc(var(--i, 0) * 70ms) cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.home-flow__col.is-armed.is-inview :is(.home-flow__title, .home-step) { animation: home-flow-slide 0.8s calc(var(--i, 0) * 90ms) cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.home-flow__col.is-armed.is-inview .home-service__icon svg > * { animation: home-icon-draw 1.1s calc(var(--i, 0) * 70ms + 200ms) ease-out backwards; }
+@keyframes home-flow-rise {
+  from { opacity: 0; transform: translateY(28px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes home-flow-slide {
+  from { opacity: 0; transform: translateX(36px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes home-icon-draw {
+  from { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  to { stroke-dasharray: 1; stroke-dashoffset: 0; }
+}
+
+/* Màn hẹp: hai nửa thành hai phần trên dưới — thẻ năng lực trước, quy trình sau. */
+@media (max-width: 900px) {
+  .home-flow__grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .home-flow__col:only-child .home-services { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-services { grid-auto-rows: minmax(128px, 1fr); }
+  /* Cột hẹp, thẻ đã sát mép: bước đang tới lượt không nhích ngang nữa (tràn mép màn hình). */
+  .home-flow .is-live .home-step.is-active { transform: none; }
+  .home-flow__col.is-armed.is-inview :is(.home-flow__title, .home-step) { animation-name: home-flow-rise; }
+}
 @media (max-width: 480px) {
-  .home-services { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-flow { --flow-radius: 22px; --flow-gap: 10px; }
+  .home-service { gap: 12px; padding: 16px; }
+  .home-service__icon svg { width: 40px; height: 40px; }
+  .home-step { grid-template-columns: 52px minmax(0, 1fr); padding: 14px 18px; }
+  .home-step__num { font-size: 36px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-flow *,
+  .home-flow *::before,
+  .home-flow *::after { transition: none !important; animation: none !important; }
 }

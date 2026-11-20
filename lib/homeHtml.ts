@@ -15,7 +15,7 @@ import {
 } from "./homeSections";
 import { buildPostCard, consultFormHtml, esc, sectionHeadHtml, type PostCardData } from "./layoutHtml";
 import { excerptFrom } from "./seo";
-import { CONTACT_FORM_ID, HOME_SLIDER_CLASS, SLIDE_MOBILE_MEDIA } from "./siteDom";
+import { CONTACT_FORM_ID, HOME_FLOW, HOME_SLIDER_CLASS, SLIDE_MOBILE_MEDIA } from "./siteDom";
 import { tiktokPlayerUrl, type TiktokVideo } from "./tiktok";
 
 type Slider = { title: string | null; imageDesktop: string; imageMobile: string | null; link: string | null };
@@ -267,6 +267,8 @@ ${posts.map((p) => buildPostCard(p)).join("\n")}
 /** Ảnh hero gốc 2400×907: khung giữ đúng tỉ lệ trước khi ảnh tải xong. */
 const HERO_SIZE = { WIDTH: 2400, HEIGHT: 907 } as const;
 const HERO_ALT = "THE UNI — xưởng sản xuất đồng phục";
+/** Hai section dựng chung thành khối "năng lực + quy trình" (sectionFlow). */
+const FLOW_IDS = ["services", "process"];
 
 /** Icon nét 24×24 cho 6 ô năng lực — cùng kiểu icon trên banner "Xưởng sản xuất đồng phục". */
 const SERVICE_ICON: Record<(typeof SERVICE_KEYS)[number], string> = {
@@ -284,8 +286,9 @@ const SERVICE_ICON: Record<(typeof SERVICE_KEYS)[number], string> = {
   s6: `<path d="M5 4h8M5 20h8M6 4v16M12 4v16"/><path d="M6 8l6 2M6 12l6 2M6 16l6 2"/><path d="M20 3 15 21"/><circle cx="19.6" cy="4.5" r=".6"/>`,
 };
 
+/** `pathLength="1"` trên từng nét: CSS vẽ nét dần bằng stroke-dashoffset 1 → 0 mà không cần đo độ dài. */
 const icon = (paths: string) =>
-  `<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+  `<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths.replace(/<(path|circle) /g, '<$1 pathLength="1" ')}</svg>`;
 
 /** Banner tràn ngang: ô ảnh khai trong admin + các slider chọn "Trang chủ". */
 function sectionHero(bySlot: Map<string, Banner>, homeSliders: Slider[]) {
@@ -370,24 +373,59 @@ function sectionIntro(txt: (k: string) => string, contact: HomeContact, tiktok: 
 </section>`;
 }
 
-function sectionServices(txt: (k: string) => string) {
+type Txt = (k: string) => string;
+
+/** Lưới 6 thẻ năng lực (không có tiêu đề); rỗng khi không còn thẻ nào có chữ. `--i` là thứ tự hiện lần lượt. */
+function servicesBlock(txt: Txt) {
   const items = SERVICE_KEYS.map((k) => ({ k, name: txt(k) }))
     .filter((x) => x.name)
     .map(
-      (x) => `<li class="home-service">
+      (x, i) => `<li class="home-service" style="--i:${i}">
 	<span class="home-service__icon">${icon(SERVICE_ICON[x.k])}</span>
 	<span class="home-service__name">${esc(x.name)}</span>
 </li>`,
     )
     .join("\n");
   if (!items) return "";
-  return `<section class="uni-section home-section home-section--sage">
-	<div class="uni-container">
-${sectionHeadHtml({ title: txt("heading"), tag: "h2" })}
-<ul class="home-services">
+  return `<ul class="home-services">
 ${items}
-</ul>
+</ul>`;
+}
+
+/** Tiêu đề + các thẻ bước quy trình; rỗng khi không còn bước nào có tên. */
+function processBlock(txt: Txt) {
+  const steps = PROCESS_STEPS.map((n) => ({ n, t: txt(`t${n}`), d: txt(`d${n}`) }))
+    .filter((s) => s.t)
+    .map(
+      (s, i) => `<li class="${HOME_FLOW.STEP_CLASS}" style="--i:${i + 1}">
+	<span class="home-step__num">${String(s.n).padStart(2, "0")}</span>
+	<div class="home-step__body">
+		<h3 class="home-step__title">${esc(s.t)}</h3>
+		${s.d ? `<p class="home-step__desc">${esc(s.d)}</p>` : ""}
 	</div>
+</li>`,
+    )
+    .join("\n");
+  if (!steps) return "";
+  return `<h2 class="home-flow__title">${esc(txt("heading"))}</h2>
+<ol class="home-steps">
+${steps}
+</ol>`;
+}
+
+/**
+ * Khối "năng lực + quy trình" theo bản thiết kế "Services Process Options": nền kem ánh vàng, bên
+ * trái 6 thẻ kính tên sản phẩm xưởng nhận làm, bên phải tiêu đề + 5 thẻ bước quy trình; màn hẹp thì
+ * hai nửa xếp trên dưới. Admin vẫn quản hai section riêng (chữ, ẩn/hiện): ẩn một bên thì nửa còn lại
+ * trải hết bề ngang. Chuyển động do components/HomeFlow.tsx điều khiển — không có JS vẫn hiện đủ.
+ */
+function sectionFlow(services: string, process: string) {
+  if (!services && !process) return "";
+  const col = (mod: string, inner: string) =>
+    inner ? `\t\t<div class="${HOME_FLOW.COL_CLASS} ${mod}">\n${inner}\n\t\t</div>\n` : "";
+  return `<section class="home-section ${HOME_FLOW.CLASS}">
+	<div class="uni-container home-flow__grid">
+${col("home-flow__col--services", services)}${col(HOME_FLOW.PROCESS_CLASS, process)}	</div>
 </section>`;
 }
 
@@ -452,28 +490,6 @@ ${figures}
 </section>`;
 }
 
-function sectionProcess(txt: (k: string) => string) {
-  const steps = PROCESS_STEPS.map((n) => ({ n, t: txt(`t${n}`), d: txt(`d${n}`) }))
-    .filter((s) => s.t)
-    .map(
-      (s) => `<li class="home-step">
-	<span class="home-step__num">${String(s.n).padStart(2, "0")}</span>
-	<h3 class="home-step__title">${esc(s.t)}</h3>
-	${s.d ? `<p class="home-step__desc">${esc(s.d)}</p>` : ""}
-</li>`,
-    )
-    .join("\n");
-  if (!steps) return "";
-  return `<section class="uni-section home-section home-section--green">
-	<div class="uni-container">
-${sectionHeadHtml({ title: txt("heading"), tag: "h2" })}
-<ol class="home-steps">
-${steps}
-</ol>
-	</div>
-</section>`;
-}
-
 /**
  * Khối "nhận tư vấn" — dùng ở trang chủ VÀ ở trang sản phẩm/bài viết/liên hệ/FAQ.
  *
@@ -508,6 +524,15 @@ export function buildHomeHtml(
   layout: HomeLayout = defaultHomeLayout(),
 ) {
   const bySlot = new Map(data.banners.map((b) => [b.slot, b]));
+  const hidden = new Set(layout.hidden);
+
+  // "services" và "process" gộp thành một khối hai cột, đặt ở chỗ của section nào đứng TRƯỚC trong
+  // thứ tự admin chọn; section còn lại không dựng gì thêm. Ẩn một bên thì khối chỉ còn bên kia.
+  const flowHome = layout.order.find((id) => FLOW_IDS.includes(id) && !hidden.has(id));
+  const flowPart = (id: string, build: (txt: Txt) => string) =>
+    hidden.has(id) ? "" : build((k) => sectionText(layout, id, k));
+  const flow = (id: string) =>
+    flowHome === id ? sectionFlow(flowPart("services", servicesBlock), flowPart("process", processBlock)) : "";
 
   // Mỗi section là một hàm dựng, gọi khi tới lượt nó trong `layout.order`.
   // Ánh xạ theo id thay vì nối chuỗi cứng: đổi thứ tự ở admin là đổi thứ tự ở đây.
@@ -516,11 +541,11 @@ export function buildHomeHtml(
     hero: () => sectionHero(bySlot, data.sliders),
     marquee: () => sectionMarquee((k) => sectionText(layout, "marquee", k)),
     intro: () => sectionIntro((k) => sectionText(layout, "intro", k), data.contact, data.tiktok),
-    services: () => sectionServices((k) => sectionText(layout, "services", k)),
+    services: () => flow("services"),
     sectors: () => sectionSectors(data.sectors, (k) => sectionText(layout, "sectors", k)),
     phoi: () => sectionPhoi(bySlot, (k) => sectionText(layout, "phoi", k)),
     showcase: () => sectionShowcase(bySlot, (k) => sectionText(layout, "showcase", k)),
-    process: () => sectionProcess((k) => sectionText(layout, "process", k)),
+    process: () => flow("process"),
     banner4: () => sectionBanner4(bySlot, (k) => sectionText(layout, "banner4", k)),
     sanpham: () => sectionSanPham(data.banners, (k) => sectionText(layout, "sanpham", k)),
     danhmuc: () => sectionDanhMuc(data.types, (k) => sectionText(layout, "danhmuc", k)),
@@ -530,7 +555,6 @@ export function buildHomeHtml(
     tuvan: () => sectionTuVan((k) => sectionText(layout, "tuvan", k)),
   };
 
-  const hidden = new Set(layout.hidden);
   const body = layout.order
     .filter((id) => !hidden.has(id) && render[id])
     .map((id) => render[id]())

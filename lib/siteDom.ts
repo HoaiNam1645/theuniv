@@ -16,6 +16,26 @@ export const DRAWER = {
 export const HOME_SLIDER_CLASS = "home-hero__slider";
 
 /**
+ * Khối "năng lực + quy trình" của trang chủ — lib/homeHtml.ts dựng, components/HomeFlow.tsx gắn
+ * class trạng thái, page-home.css (khối "năng lực + quy trình") vẽ chuyển động.
+ */
+export const HOME_FLOW = {
+  CLASS: "home-flow",
+  COL_CLASS: "home-flow__col",
+  PROCESS_CLASS: "home-flow__col--process",
+  STEP_CLASS: "home-step",
+  /** Cột đang nằm ngoài màn hình lúc JS chạy: giấu nội dung, chờ cuộn tới mới hiện. */
+  ARMED_STATE: "is-armed",
+  /** Cột đã cuộn vào màn hình: nội dung hiện lần lượt. */
+  INVIEW_STATE: "is-inview",
+  /** Cột quy trình đang chạy vòng lặp: số của bước chưa tới lượt thì nhạt. */
+  LIVE_STATE: "is-live",
+  /** Bước đang tới lượt / bước đã qua. */
+  STEP_ACTIVE: "is-active",
+  STEP_DONE: "is-done",
+} as const;
+
+/**
  * Màn hẹp hơn mốc này dùng ảnh slider mobile (dựng dọc) — `<source media>` của lib/homeHtml.ts; ở
  * cùng mốc components/HomeSwipers.tsx tắt tự chuyển slide: slide ảnh dọc và slide chỉ có banner
  * ngang chênh cao nhau gấp bốn.
